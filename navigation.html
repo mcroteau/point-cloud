@@ -48,6 +48,7 @@
 <script src="js/stats.min.js"></script>
 
 <script src="js/Detector.js"></script>
+<script src="js/FirstPersonControls.js"></script>
 
 <script type="text/javascript">
 
@@ -88,6 +89,7 @@
 		geometry = new THREE.Geometry();
 		clock = new THREE.Clock();
 		
+		controls = new THREE.FirstPersonControls(camera);
 		
 		// camera = new THREE.Camera( 3, window.innerWidth / window.innerHeight, -2000, 10000 );
 		// camera.projectionMatrix = THREE.Matrix4.makeOrtho( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, - 2000, 10000 );
@@ -97,6 +99,7 @@
         
 
 		scene = new THREE.Scene();
+		scene.fog = new THREE.FogExp2(0xD6F1FF, 0.0005);
         
 		grass  = THREE.ImageUtils.loadTexture( "images/textures/grass.jpg" );
 		grass.wrapT = grass.wrapS = THREE.RepeatWrapping;
@@ -127,9 +130,9 @@
 		renderer.setSize( $window.width(), $window.height() );
 		$container.append( renderer.domElement );
 				
-		addKeyEvents();
-    
-		addMouseNavigation($container);
+		//addKeyEvents();
+		//addMouseNavigation($container);
+		
 		animate();
     
 	}
@@ -155,27 +158,66 @@
     
     
 	function navigateMouseDown(event){
+		event.preventDefault();	
+		event.stopPropagation();
+	
+		if ( domElement !== document ) {
+			domElement.focus();
+		}
+
 		event.preventDefault();
-    
-		switch (event.which) {
-	        case LEFT_MOUSE_CLICK:
-	            console.log('Left mouse button pressed');
-	            break;
-	        case MIDDLE_MOUSE_CLICK:
-	            console.log('Middle mouse button pressed');
-	            break;
-	        case RIGHT_MOUSE_CLICK:
-	            console.log('Right mouse button pressed');
-	            break;
-	        default:
-	            console.log('You have a strange mouse');
-	    }
+		if ( activeLook ) {
+
+			switch ( event.button ) {
+
+				case 0: moveForward = true; break;
+				case 2: moveBackward = true; break;
+
+			}
+
+		}
+
+		this.mouseDragOn = true;
+		
+		// switch (event.which) {
+		// 	        case LEFT_MOUSE_CLICK:
+		// 	            console.log('Left mouse button pressed');
+		// 	            break;
+		// 	        case MIDDLE_MOUSE_CLICK:
+		// 	            console.log('Middle mouse button pressed');
+		// 	            break;
+		// 	        case RIGHT_MOUSE_CLICK:
+		// 	            console.log('Right mouse button pressed');
+		// 	            break;
+		// 	        default:
+		// 	            console.log('You have a strange mouse');
+		// 	    }
 	}
     
-    
+	var domElement = document;    
+	var viewHalfX, viewHalfY;
+	
+	if ( domElement === document ) {
+		viewHalfX = window.innerWidth / 2;
+		viewHalfY = window.innerHeight / 2;
+	} else {
+		viewHalfX = domElement.offsetWidth / 2;
+		viewHalfY = domElement.offsetHeight / 2;
+		domElement.setAttribute( 'tabindex', -1 );
+	}
+	
+	
+	
 	function navigateMouseMove(event){
 		event.preventDefault();
 		// console.info('mousemove', event)
+		if ( domElement === document ) {
+			mouseX = event.pageX - viewHalfX;
+			mouseY = event.pageY - viewHalfY;
+		} else {
+			mouseX = event.pageX - domElement.offsetLeft - viewHalfX;
+			mouseY = event.pageY - domElement.offsetTop - viewHalfY;
+		}
 	}
     
 	function navigateMouseWheel(event, delta, deltaX, deltaY){
@@ -283,19 +325,125 @@
 
 	function animate() {				
 		requestAnimationFrame( animate );
-		render();
+		render(clock.getDelta());
 		//stats.update();
 	}
+	
+	
+	function render(delta) {
+		camera.lookAt( scene.position );
+		renderer.render( scene, camera );
+		controls.update(delta);
+		//debugFrameInfo();
+		//move(delta);
+	}
+	
 	
 	
 	var frames = 0;
 	var lastDelta = 0,
 		currentDelta = 0;
-	function render() {
-		camera.lookAt( scene.position );
-		renderer.render( scene, camera );
-		//debugFrameInfo();
+	
+	var moveSpeed = 100.0,
+		lookSpeed = 0.005,
+		heightSpeed = false,
+		heightCoef = 1.0,
+		heightMin = 0.0;
+		
+	var activeLook = false;
+	var autoSpeedFactor = 0.0;
+	
+	var lat = 0,
+		lon = 0;
+		
+		
+	var mouseX = 0,
+		mouseY = 0;
+		
+	var lookVertical = true;
+    var constrainVertical = false;
+		
+	var target = new THREE.Vector3( 0, 0, 0 );
+	
+	
+	var mouseDragOn = false;
+	
+	function move(delta){
+		var actualMoveSpeed = 0;
+		
+		actualMoveSpeed = delta * moveSpeed;
+		
+		// if ( moveForward || ( autoForward && !moveBackward ) ) {
+		if ( moveForward ) {
+			camera.translateZ( - ( actualMoveSpeed + autoSpeedFactor ) );
+		}
+		
+		if ( moveBack ) camera.translateZ( actualMoveSpeed );
+        
+		if ( moveLeft ) camera.translateX( - actualMoveSpeed );
+		if ( moveRight ) camera.translateX( actualMoveSpeed );
+        
+		if ( moveUp ) camera.translateY( actualMoveSpeed );
+		if ( moveDown ) camera.translateY( - actualMoveSpeed );
+        
+		var actualLookSpeed = delta * lookSpeed;
+        
+		if ( !activeLook ) {
+			actualLookSpeed = 0;
+		}
+		
+
+		lon += mouseX * actualLookSpeed;
+		if( lookVertical ) lat -= mouseY * actualLookSpeed;
+        
+		lat = Math.max( - 85, Math.min( 85, lat ) );
+		
+		
+		phi = ( 90 - lat ) * Math.PI / 180;
+		theta = lon * Math.PI / 180;
+        
+		var targetPosition = target,
+			position = camera.position;
+        
+
+		targetPosition.x = position.x + 100 * Math.sin( phi ) * Math.cos( theta );
+		targetPosition.y = position.y + 100 * Math.cos( phi );
+		targetPosition.z = position.z + 100 * Math.sin( phi ) * Math.sin( theta );
+		
+		
+		var verticalLookRatio = 1;
+
+		if ( this.constrainVertical ) {
+
+			verticalLookRatio = Math.PI / ( verticalMax - verticalMin );
+
+		}
+		
+		lon += mouseX * actualLookSpeed;
+		if( lookVertical ) lat -= mouseY * actualLookSpeed * verticalLookRatio;
+
+		lat = Math.max( - 85, Math.min( 85, lat ) );
+		phi = ( 90 - lat ) * Math.PI / 180;
+
+		theta = lon * Math.PI / 180;
+
+		if ( constrainVertical ) {
+			phi = THREE.Math.mapLinear( phi, 0, Math.PI, verticalMin, verticalMax );
+		}
+		
+
+		var targetPosition = target,
+			position = camera.position;
+
+		targetPosition.x = position.x + 100 * Math.sin( phi ) * Math.cos( theta );
+		targetPosition.y = position.y + 100 * Math.cos( phi );
+		targetPosition.z = position.z + 100 * Math.sin( phi ) * Math.sin( theta );
+
+		camera.lookAt( targetPosition );						
+			
 	}
+	
+	
 	
 	function debugFrameInfo(){
 		if(frames%500 === 0){
