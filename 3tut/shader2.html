@@ -1,0 +1,190 @@
+<html>
+<head>
+</head>
+<body>
+	
+	<div id="container">
+		
+	</div>
+	
+	
+<script type="text/shader" id="vertexShader">
+uniform float amplitude;
+attribute float displacement;
+varying vec3 vNormal;
+
+void main() {
+
+  vNormal = normal;
+
+  // multiply our displacement by
+  // the amplitude. The amp will
+  // get animated so we'll have
+  // animated displacement
+  vec3 newPosition =
+    position +
+    normal *
+    vec3(displacement *
+    amplitude);
+
+  gl_Position = projectionMatrix *
+                modelViewMatrix *
+                vec4(newPosition, 1.0);
+}
+</script>	
+	
+<script type="text/shader" id="fragmentShader">
+// same name and type as VS
+varying vec3 vNormal;
+
+void main() {
+
+  // calc the dot product and clamp
+  // 0 -> 1 rather than -1 -> 1
+  vec3 light = vec3(0.5,0.2,1.0);
+
+  // ensure it's normalized
+  light = normalize(light);
+
+  // calculate the dot product of
+  // the light to the vertex normal
+  float dProd = max(0.0,
+                    dot(vNormal, light));
+
+  // feed into our frag colour
+  gl_FragColor = vec4(dProd, // R
+                      dProd, // G
+                      dProd, // B
+                      1.0);  // A
+
+}
+</script>
+
+
+
+<script type="text/javascript" src="three.js"></script>
+<script type="text/javascript" src="jquery.js"></script>
+
+<script type="text/javascript">
+
+	requestAnimFrame = (function(){
+	    return  window.requestAnimationFrame       ||
+	        window.webkitRequestAnimationFrame ||
+	        window.mozRequestAnimationFrame    ||
+	        window.oRequestAnimationFrame      ||
+	        window.msRequestAnimationFrame     ||
+	        function(callback, element) {
+	            window.setTimeout(callback, 1000 / 60);
+	        };
+	}());
+
+	var WIDTH = 400,
+		HEIGHT = 300;
+		
+	var VIEW_ANGLE = 45,
+		ASPECT = WIDTH / HEIGHT,
+		NEAR = 0.1,
+		FAR = 10000;
+		
+
+
+	$(document).ready(function(){
+
+		var $container = $('#container');
+		var vertexShader = $('#vertexShader').text();
+		var fragmentShader = $('#fragmentShader').text();
+		
+		
+		var renderer = new THREE.WebGLRenderer({
+			stencil : true
+		});
+		
+		var camera = new THREE.PerspectiveCamera(
+				VIEW_ANGLE,
+				ASPECT,
+				NEAR,
+				FAR
+			);
+		
+		var scene = new THREE.Scene();
+		
+		scene.add(camera);
+		camera.position.z = 300;
+		renderer.setSize(WIDTH, HEIGHT);
+		
+		$container.append(renderer.domElement);
+		
+		var radius = 50, 
+			segments = 16,
+			rings = 16;
+			
+		var sphereGeometry = new THREE.SphereGeometry(radius, segments, rings);
+		
+		var attributes = {
+			displacement: {
+		    	type: 'f', // a float
+		    	value: [] // an empty array
+		  	}
+		};
+		var uniforms = {
+			amplitude: {
+				type: 'f', // a float
+				value: 0
+			}
+		};
+		
+		var vertexShader = $('#vertexShader').text();
+		var fragmentShader = $('#fragmentShader').text();
+		
+		var shaderMaterial = new THREE.ShaderMaterial({
+			uniforms       : uniforms,
+		    attributes     : attributes,
+		    vertexShader   : vertexShader,
+		    fragmentShader : fragmentShader
+		});
+		
+		
+		var sphere = new THREE.Mesh(sphereGeometry, shaderMaterial);		
+		var verts = sphere.geometry.vertices;
+		var values = attributes.displacement.value;
+
+		for(var v = 0; v < verts.length; v++) {
+			values.push(Math.random() * 30);
+		}
+		
+		
+		scene.add(sphere);
+		
+		
+		var pointLight = new THREE.PointLight(0xFFFFFF);
+		pointLight.position.x = 10;
+		pointLight.position.y = 50;
+		pointLight.position.z = 130;
+		
+		scene.add(pointLight);
+        renderer.render(scene, camera);
+		
+		var frame = 0;
+		function update() {
+			uniforms.amplitude.value = Math.sin(frame);
+			frame += 0.1;
+			renderer.render(scene, camera);
+			requestAnimFrame(update);
+		}
+
+		requestAnimFrame(update);
+
+		
+	});
+
+		
+
+	
+	
+
+
+	
+</script>
+	
+</body>
+</html>

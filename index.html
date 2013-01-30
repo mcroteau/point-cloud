@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+  <head>
+    <title>overunder</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+    <!-- dependencies -->
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript" src="js/colorbrewer.js"></script>
+    <script type="text/javascript" src="js/three.min.js"></script>
+    <script type="text/javascript" src="js/stats.min.js"></script>
+    <script type="text/javascript" src="js/d3.v2.js"></script>
+    <script type="text/javascript" src="js/jqmwheel.js"></script>
+    <script type="text/javascript" src="js/allover.js"></script>
+	
+	<style type="text/css">
+		body{
+			background:#111;
+			overflow:hidden;
+		}
+	</style>
+ 
+    <div id="viewer"></div>
+
+
+    <script type="text/javascript">
+
+		$(document).ready(function() {
+			
+			function windowInnerWidth() {
+		        return window.innerWidth;
+		    }
+		    function windowInnerHeight() {
+		        return window.innerHeight;
+		    }
+
+		    var DEFAULT_POINT_SIZE = 2;
+		    var MIN_POINT_SIZE = 1;
+		    var MAX_POINT_SIZE = 10;
+		    var WIDTH = windowInnerWidth();
+		    var HEIGHT = windowInnerHeight();
+
+		    var windowHalfX = WIDTH / 2;
+		    var windowHalfY = HEIGHT / 2;
+
+		    var VIEW_ANGLE = 45,
+		    	ASPECT = WIDTH / HEIGHT,
+		    	NEAR = 0.1,
+		    	FAR = 10000;
+		
+			var $container = $('#viewer')[0];
+			
+	        var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+	
+			// camera, domElement
+			var profileBox = new Allover.ProfileBox(camera, $container);
+			
+			// camera, domElement
+			var controls = new THREE.QTControls(camera, $container);
+			
+			
+	        var shader = Allover.ShaderUtils.lib[ 'profile' ];
+	        var scene = new THREE.Scene();
+			
+			
+			var material = new THREE.ShaderMaterial({
+	        	attributes     : profileBox.attributes,
+	        	uniforms       : profileBox.uniforms,
+	        	depthTest      : true,
+	        	transparent    : true,
+	        	vertexColors   : THREE.VertexColors,
+	        	vertexShader   : shader.vertexShader,
+	        	fragmentShader : shader.fragmentShader
+	        });
+	
+	
+			//material, pbox, scene, controls, options, data
+			var viewer = new Allover.viewer(material, profileBox, scene, controls, {});
+			
+			function isString(obj){
+				return toString.call(obj) == '[object String]';
+			}
+			
+			$.ajax({
+				url: 'data/points.json',
+				dataType: 'json',
+				context: this
+			}).done(function( json ) {
+				console.log(Allover)
+				Allover.viewer.addData({
+			 		data: json,
+			    	container: $('#viewer')
+			  	});
+				
+			
+			}).fail(function( xhr, error, status ) {
+				console.log(xhr);
+				console.log(error);
+				console.log(status);
+			});
+		});
+		
+    </script>
+  </body>
+</html>

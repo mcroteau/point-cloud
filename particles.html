@@ -1,0 +1,281 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - particles</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background-color: #000000;
+				margin: 0px;
+				overflow: hidden;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+				font-weight: bold;
+				text-align:center;
+			}
+
+			#container {
+	      		position: absolute;
+	      		top: 0px; 
+				left: 0px;
+	      		bottom:0px;
+				right:0px;
+				height: 100%;
+	      		background: #000;
+	      		padding: 0;
+	      		margin: 0;
+	      		overflow: hidden;
+	      	}
+
+		</style>
+	</head>
+	<body>
+
+		<div id="container"></div>
+		
+		
+		<script src="js/jquery.js"></script>
+		<script src="js/three.min.js"></script>
+		<script src="js/jqmwheel.js"></script>
+		<script src="js/mwheelIntent.js"></script>
+		<script src="js/stats.min.js"></script>
+
+		<script src="js/Detector.js"></script>
+		<script src="js/Controls.js"></script>
+
+		<script>
+
+		
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+			var stats;
+			var camera, scene, renderer, particles, geometry, controls, clock;
+			
+			var HEIGHT = window.innerHeight,
+				WIDTH = window.innerWidth;
+				
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+
+			var VIEW_ANGLE = 45,
+				ASPECT = WIDTH / HEIGHT,
+				NEAR = 0.1,
+				FAR = 10000;
+				
+				
+			var $container = [],
+				containerDom = {};
+
+			$(document).ready(function(){
+			
+				$.ajax({
+					dataType: "json",
+					url: "data/points3.json",
+					success: init
+				});
+				
+			})
+
+
+			function init(json) {
+			
+			
+				$container = $('#container');
+				containerDom = $container[0];
+
+				//camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 1000 );
+				camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+			
+
+				scene = new THREE.Scene();
+				geometry = new THREE.Geometry();
+				
+				
+				controls = new THREE.QTControls(camera, containerDom);
+				clock = new THREE.Clock();
+
+				
+				$(json.features).each(function(index, feature){
+					var vertex = new THREE.Vector3();
+					
+					vertex.x = feature.geometry.coordinates[0];
+					vertex.y = feature.geometry.coordinates[1];
+					vertex.z = feature.geometry.coordinates[2];
+					
+					geometry.vertices.push( vertex );
+				});
+				
+				
+				
+				geometry.computeBoundingBox();
+		        var minx = geometry.boundingBox.min.x;
+		        var miny = geometry.boundingBox.min.y;
+		        var minz = geometry.boundingBox.min.z;
+		        var maxx = geometry.boundingBox.max.x;
+		        var maxy = geometry.boundingBox.max.y;
+		        var maxz = geometry.boundingBox.max.z;
+
+		        var xsize = (maxx - minx);
+		        var ysize = (maxy - miny);
+		        var zsize = (maxz - minz);
+
+		        var halfx = xsize / 2;
+		        var halfy = ysize / 2;
+		        var halfz = zsize / 2;
+
+		        var midx = halfx + minx;
+		        var midy = halfy + miny;
+		        var midz = halfz + minz;
+		
+		
+				$(geometry.vertices).each(function(index, vertex){
+					vertex.x = vertex.x - midx;
+		          	vertex.y = vertex.y - midy;
+		          	vertex.z = vertex.z - midz;
+				});
+
+				material = new THREE.ParticleBasicMaterial( { size: 1, color : 0xBFE2E3 } );
+				particles = new THREE.ParticleSystem( geometry, material );
+
+				scene.add( particles );
+
+
+		        geometry.computeBoundingBox();
+		        minx = geometry.boundingBox.min.x;
+		        miny = geometry.boundingBox.min.y;
+		        minz = geometry.boundingBox.min.z;
+		        maxx = geometry.boundingBox.max.x;
+		        maxy = geometry.boundingBox.max.y;
+		        maxz = geometry.boundingBox.max.z;
+
+		        xsize = (maxx - minx);
+		        ysize = (maxy - miny);
+		        zsize = (maxz - minz);
+
+		        halfx = xsize / 2;
+		        halfy = ysize / 2;
+		        halfz = zsize / 2;
+
+		        // Display axis
+		        midx = halfx + minx;
+		        midy = halfy + miny;
+		        midz = halfz + minz;
+		
+				controls.setInitialCenter(midx, midy, midz);
+				controls.setBoundingBox(geometry.boundingBox);
+		
+				ysize = 10;
+				halfy = ysize / 2;
+			
+				addLines(scene, minx, miny, minz, midx, midy, midz, maxx, maxy, maxz)
+	
+		
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				$container.append( renderer.domElement );
+
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				$container.append( stats.domElement );
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+				animate();
+				clock.start();
+				
+				addKeyEvents();
+				
+			}
+
+			var UP_ARROW = 38,
+				DOWN_ARROW = 40,
+				LEFT_ARROW = 37,
+				RIGHT_ARROW = 39;
+
+			function addKeyEvents(){
+				$(document).keypress(function(event){
+					var code = event.keyCode;
+					switch(code){
+						case UP_ARROW : 
+							console.log('up arrow');
+							break;
+						case DOWN_ARROW : 
+							console.log('down arrow');
+							break;
+						case LEFT_ARROW : 
+							console.log('left arrow');
+							break;
+						case RIGHT_ARROW : 
+							console.log('right arrow');
+							break;
+					}
+					console.log(event)
+				});
+			}
+
+
+
+			function addLines(scene, minx, miny, minz, midx, midy, midz, maxx, maxy, maxz){
+				
+				var xLineMat = new THREE.LineBasicMaterial({
+		            color: 0xcc0000, opacity: 0.5, linewidth: 1
+		        });
+		        var xLineGeom = new THREE.Geometry();
+		        xLineGeom.vertices.push(new THREE.Vector3(minx, midy, 0));
+		        xLineGeom.vertices.push(new THREE.Vector3(maxx, midy, 0));
+
+		        var yLineMat = new THREE.LineBasicMaterial({
+		            color: 0x0000cc, opacity: 0.5, linewidth: 1
+		        });
+		        var yLineGeom = new THREE.Geometry();
+		        yLineGeom.vertices.push(new THREE.Vector3(midx, miny, 0));
+		        yLineGeom.vertices.push(new THREE.Vector3(midx, maxy, 0));
+
+		        var zLineMat = new THREE.LineBasicMaterial({
+		            color: 0x00cc00, opacity: 0.5, linewidth: 1
+		        });
+		        var zLineGeom = new THREE.Geometry();
+		        zLineGeom.vertices.push(new THREE.Vector3(midx, midy, Math.min(0, minz)));
+		        zLineGeom.vertices.push(new THREE.Vector3(midx, midy, Math.max(0, maxz)));
+
+		        var xLine = new THREE.Line(xLineGeom, xLineMat);
+		        var yLine = new THREE.Line(yLineGeom, yLineMat);
+		        var zLine = new THREE.Line(zLineGeom, zLineMat);
+
+		        scene.add(xLine);
+		        scene.add(yLine);
+		        scene.add(zLine);
+			}
+
+
+			function onWindowResize() {
+				
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+			}
+
+
+			function animate() {				
+				requestAnimationFrame( animate );
+				render();
+				stats.update();
+			}
+			
+			
+
+			function render() {
+				camera.lookAt( scene.position );
+				renderer.render( scene, camera );
+				controls.update(clock.getDelta())
+			}
+
+
+		</script>
+	</body>
+</html>

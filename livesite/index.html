@@ -1,0 +1,265 @@
+
+<!doctype html>
+<html>
+  <head>
+    <title>allover.js</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+    <!-- dependencies -->
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript" src="js/jquery-ui.js"></script>
+    <script type="text/javascript" src="js/colorbrewer.js"></script>
+    <script type="text/javascript" src="js/three.min.js"></script>
+    <script type="text/javascript" src="js/stats.min.js"></script>
+    <script type="text/javascript" src="js/d3.v2.js"></script>
+    <script type="text/javascript" src="js/jqmwheel.js"></script>
+    <script type="text/javascript" src="js/allover.js"></script>
+    <script type="text/javascript" src="js/facebox.js"></script>
+
+    <!-- styles -->
+    <link rel="stylesheet" type="text/css" href="css/jquery-ui.css">
+    <link rel="stylesheet" type="text/css" href="css/facebox.css">
+    <style>
+      body {
+        font-family: Helvetica, arial, freesans, clean, sans-serif;
+        line-height: 1.4;
+      }
+      h1, h2, h3, h4, h5, h6 {
+        font-weight: bold;
+      }
+      h2 {
+        display: block;
+        -webkit-margin-before: 0.83em;
+        -webkit-margin-after: 0.83em;
+        -webkit-margin-start: 0px;
+        -webkit-margin-end: 0px;
+      }
+      h3 {
+        display: block;
+        -webkit-margin-before: 1em;
+        -webkit-margin-after: 1em;
+        -webkit-margin-start: 0px;
+        -webkit-margin-end: 0px;
+      }
+      .rule, hr {
+        clear: both;
+        margin: 15px 0;
+        height: 0px;
+        overflow: hidden;
+        border: none;
+        background: transparent;
+        border-bottom: 1px solid#ddd;
+      }
+      #viewer {
+        position: absolute;
+        top: 0px; left: 200px;
+        height: 100%;
+        background: #000;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      #sidebar {
+        position: absolute;
+        top: 0px; left: 0px;
+        height: 100%; width: 200px;
+        background: #aaa;
+      }
+
+      .sidebar_element {
+        margin: 20px;
+      }
+
+      dl.keyboard-mappings {
+        margin: 5px 0;
+        font-size: 12px;
+      }
+      dl.keyboard-mappings dt {
+          display: inline-block;
+          margin: 0;
+          padding: 3px 6px;
+          min-width: 10px;
+          text-align: center;
+          font-family: Monaco, "Liberation Mono", Courier, monospace;
+          background: #333;
+          color: #EEE;
+          -webkit-border-radius: 2px;
+          -moz-border-radius: 2px;
+          border-radius: 2px;
+          text-shadow: 1px 1px 0 black;
+          border-top-left-radius: 2px 2px;
+          border-top-right-radius: 2px 2px;
+          border-bottom-right-radius: 2px 2px;
+          border-bottom-left-radius: 2px 2px;
+        }
+        dl.keyboard-mappings dt em{
+          padding: 0 4px;
+          color: #999;
+          font-style: normal;
+          font-weight: normal;
+          font-size: 10px;
+          font-family: Helvetica, arial, freesans, clean, sans-serif;
+          text-shadow: none
+        }
+        dl.keyboard-mappings dd {
+          display: inline;
+          margin: 0 0 0 5px;
+          color: #666;
+        }
+        #facebox {
+          text-align: left;
+        }
+        #facebox h2 {
+          width: 100%;
+          margin: 0 0 10px -10px;
+          padding: 0 10px 10px 10px;
+          font-size: 16px;
+          color: #
+          border-bottom: 1px solid#ddd!important;
+        }
+        #facebox h3 {
+          margin-bottom: -0.5em;
+          font-size: 14px;
+          color: #000;
+        }
+        #facebox .badmono{
+          font-family: sans-serif;
+          font-weight: bold;
+        }
+
+    </style>
+  </head>
+  <body>
+
+    <div id="sidebar">
+      <div class="sidebar_element"><select id="colorize-select">
+        <optgroup label="Colorize by...">
+          <option selected value="imagery">Imagery</option>
+          <option value="intensity">Intensity</option>
+          <option value="elevation">Elevation</option>
+          <option value="pcid">Point Cloud ID</option>
+          <option value="classification">Classification</option>
+        </optgroup>
+      </select></div>
+      <div class="sidebar_element"><select id="colorbrewer-select">
+        <optgroup label="Colorbrewer palette...">
+          <option value="Purples">Purples</option>
+          <option value="Blues">Blues</option>
+          <option value="Greens">Greens</option>
+          <option value="Oranges">Oranges</option>
+          <option value="Reds">Reds</option>
+          <option value="Greys">Greys</option>
+          <option value="Spectral">Spectral</option>
+          <option value="RdYlGn">RdYlGn</option>
+          <option selected value="RdYlBu">RdYlBu</option>
+        </optgroup>
+      </select></div>
+      <div class="sidebar_element">
+        <input type="button" id="resetButton" value="Reset View" />
+      </div>
+      <div class="sidebar_element" id="pointSizeSlider"></div>
+      <div class="sidebar_element" id="pointSizeText"></div>
+      <div class="sidebar_element" id="classificationLegend"></div>
+      <div class="sidebar_element">
+        <p><a href="#keyboard_shortcuts" rel="facebox">Shortcuts</a></p>
+      </div>
+    </div>
+
+    <div id="viewer"></div>
+
+    <div id="keyboard_shortcuts" style="display:none">
+      <h2>Keyboard Shortcuts</h2>
+      <h3>Site wide shortcuts</h3>
+      <div class="rule"></div>
+      <dl class="keyboard-mappings">
+        <dt>?</dt>
+        <dd>Bring up this help dialog</dd>
+      </dl>
+      <dl class="keyboard-mappings">
+        <dt>[<em>/</em>]</dt>
+        <dd>Decrease/Increase point size</dd>
+      </dl>
+      <h3>Profile box shortcuts</h3>
+      <div class="rule"></div>
+      <dl class="keyboard-mappings">
+        <dt>p</dt>
+        <dd>Place a profile box in the center of the scene</dd>
+      </dl>
+      <dl class="keyboard-mappings">
+        <dt>q <em>or</em> e</dt>
+        <dd>Rotate box about z</dd>
+      </dl>
+      <dl class="keyboard-mappings">
+        <dt><span class="badmono">←</span> <em>or</em> <span class="badmono">→</span></dt>
+        <dd>Translate box along x axis</dd>
+      </dl>
+      <dl class="keyboard-mappings">
+        <dt><span class="badmono">↑</span> <em>or</em> <span class="badmono">↓</span></dt>
+        <dd>Translate box along y axis</dd>
+      </dl>
+      <dl class="keyboard-mappings">
+        <dt>page up <em>or</em> page down</dt>
+        <dd>Translate box along z axis</dd>
+      </dl>
+      <dl class="keyboard-mappings">
+        <dt>c</dt>
+        <dd>Crop data to profile box extents</dd>
+      </dl>
+      <dl class="keyboard-mappings">
+        <dt>shift <span class="badmono">←</span> <em>or</em> shift <span class="badmono">→</span></dt>
+        <dd>Expand/contract along x</dd>
+      </dl>
+      <dl class="keyboard-mappings">
+        <dt>shift <span class="badmono">↑</span> <em>or</em> shift <span class="badmono">↓</span></dt>
+        <dd>Expand/contract along y</dd>
+      </dl>
+      <dl class="keyboard-mappings">
+        <dt>shift<em>+</em>page up <em>or</em> shift<em>+</em>page down</dt>
+        <dd>Expand/contract along z</dd>
+      </dl>
+    </div> <!-- /.keyboard_shortcuts -->
+
+    <script type="text/javascript">
+
+      $(document).ready(function() {
+
+        var shortcuts_visible = false;
+
+        $(document).keydown(function( event ) {
+          if ( event.which === 191 && event.shiftKey ) { // ?
+            if ( shortcuts_visible === false ) {
+              $.facebox({ div: "#keyboard_shortcuts" });
+              shortcuts_visible = true;
+            } else {
+              $(document).trigger( 'close.facebox' );
+              shortcuts_visible = false;
+            }
+          }
+        });
+
+        $( 'a[rel*=facebox]' ).facebox({
+          loadingImage : 'css/images/loading.gif',
+          closeImage : 'css/images/closelabel.png'
+        });
+
+        $.ajax({
+          url: 'data/points3.json',
+          dataType: 'json',
+          context: this
+        }).done(function( json ) {
+          Allover.viewer.run({
+            data: json,
+            container: $('#viewer')
+          });
+        }).fail(function( xhr, error, status ) {
+          console.log(xhr);
+          console.log(error);
+          console.log(status);
+        });
+      });
+
+    </script>
+  </body>
+</html>
