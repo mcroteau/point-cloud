@@ -1,0 +1,312 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>three.js webgl - particles</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<style>
+	body {
+		background-color: #222;
+		margin: 0px;
+		overflow: hidden;
+		font-family:Monospace;
+		font-size:13px;
+		text-align:center;
+		font-weight: bold;
+		text-align:center;
+	}
+
+	#container {
+  		position: absolute;
+  		top: 0px; 
+		left: 0px;
+  		bottom:0px;
+		right:0px;
+		height: 100%;
+  		background: #000;
+  		padding: 0;
+  		margin: 0;
+  		overflow: hidden;
+  	}
+
+</style>
+</head>
+<body oncontextmenu="return false;">
+
+<!-- http://catchvar.com/threejs-game-overview-and-isometric-grid -->
+
+<div id="container"></div>
+
+
+<script src="js/jquery.js"></script>
+<script src="js/three.min.js"></script>
+<script src="js/jqmwheel.js"></script>
+
+<!-- <script src="js/mwheelIntent.js"></script> -->
+
+<script src="js/stats.min.js"></script>
+
+<script src="js/Detector.js"></script>
+
+<script type="text/javascript">
+
+	$(document).ready(function(){
+		init();
+	});
+
+	if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+	var stats;
+	var camera, scene, renderer, particles, geometry, controls, clock;
+	
+	var HEIGHT = window.innerHeight,
+		WIDTH = window.innerWidth;
+		
+
+	var VIEW_ANGLE = 45,
+		ASPECT = WIDTH / HEIGHT,
+		NEAR = 0.1,
+		FAR = 10000;
+		
+		
+	var $window = [],
+		$container = [],
+		containerDom = {};
+
+
+
+	function init(json) {
+				
+		$window = $(window),
+		$container = $('#container');
+		containerDom = $container[0];
+
+		camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+	
+		scene = new THREE.Scene();
+		geometry = new THREE.Geometry();
+		clock = new THREE.Clock();
+		
+		
+		// camera = new THREE.Camera( 3, window.innerWidth / window.innerHeight, -2000, 10000 );
+		// camera.projectionMatrix = THREE.Matrix4.makeOrtho( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, - 2000, 10000 );
+		camera.position.x = 100;
+		camera.position.y = 50.711; // 30 degree angle from the xz plane
+		camera.position.z = 100;
+        
+
+		scene = new THREE.Scene();
+        
+		grass  = THREE.ImageUtils.loadTexture( "images/textures/grass.jpg" );
+		grass.wrapT = grass.wrapS = THREE.RepeatWrapping;
+        
+		plane = new THREE.PlaneGeometry(8, 8, 8, 8);
+        
+		for ( i = 0; i < plane.faceVertexUvs[ 0 ].length; i ++ ) {
+        
+			uvs = plane.faceVertexUvs[ 0 ][ i ];
+			for ( j = 0; j < uvs.length; j ++ ) {
+				uvs[ j ].u *= 8;
+				uvs[ j ].v *= 8;
+			}
+		}
+        
+		meshCanvas = new THREE.Mesh( plane, new THREE.MeshBasicMaterial( { map: grass, wireframe: false } ));
+		
+		var level = -90 * Math.PI / 180;
+		console.info(level)
+		meshCanvas.rotation.x = level;
+		meshCanvas.scale.x = meshCanvas.scale.y = meshCanvas.scale.z = 100;
+        
+		scene.add( meshCanvas );
+		
+		
+		
+		renderer = new THREE.WebGLRenderer();
+		renderer.setSize( $window.width(), $window.height() );
+		$container.append( renderer.domElement );
+				
+		addKeyEvents();
+    
+		addMouseNavigation($container);
+		animate();
+    
+	}
+	
+    
+	var LEFT_MOUSE_CLICK = 1,
+		MIDDLE_MOUSE_CLICK = 2,
+		RIGHT_MOUSE_CLICK = 3;
+    
+    
+	function addMouseNavigation($dom){
+		$dom.mousemove(navigateMouseMove);
+		$dom.mousewheel(navigateMouseWheel);
+		$dom.mousedown(navigateMouseDown);
+		$dom.mouseup(navigateMouseUp);
+	}
+    
+    
+	function navigateMouseUp(event){
+		event.preventDefault();
+		// console.info('mouseup', event)
+	}
+    
+    
+	function navigateMouseDown(event){
+		event.preventDefault();
+    
+		switch (event.which) {
+	        case LEFT_MOUSE_CLICK:
+	            console.log('Left mouse button pressed');
+	            break;
+	        case MIDDLE_MOUSE_CLICK:
+	            console.log('Middle mouse button pressed');
+	            break;
+	        case RIGHT_MOUSE_CLICK:
+	            console.log('Right mouse button pressed');
+	            break;
+	        default:
+	            console.log('You have a strange mouse');
+	    }
+	}
+    
+    
+	function navigateMouseMove(event){
+		event.preventDefault();
+		// console.info('mousemove', event)
+	}
+    
+	function navigateMouseWheel(event, delta, deltaX, deltaY){
+		// console.info('mousewheel')
+		console.info(delta, deltaX, deltaY);
+	}
+    
+    
+    
+	var moveLeft    = false,
+		moveRight   = false,
+		moveUp      = false,
+		moveDown    = false,
+		moveForward = false,
+		moveBack    = false;
+    
+    
+	var MOVE_FORWARD = 38, //up arrow,
+		MOVE_BACK    = 40, //down arrow
+		MOVE_LEFT    = 37, //left arrow
+		MOVE_RIGHT   = 39, //right arrow
+		MOVE_UP      = 88, //x
+		MOVE_DOWN    = 90; //z
+    
+    
+	function addKeyEvents(){
+		$(document).keydown(keyMove);
+		$(document).keyup(clearKeyMove);
+	}
+    
+    
+	function keyMove(event){
+		var code = event.keyCode;
+		switch(code){
+			case MOVE_UP : 
+				console.log('up');
+				moveUp = true;
+				break;
+			case MOVE_DOWN : 
+				console.log('down');
+				moveDown = true;
+				break;
+			case MOVE_LEFT : 
+				console.log('left');
+				moveLeft = true;
+				break;
+			case MOVE_RIGHT : 
+				console.log('right');
+				moveRight = true;
+				break;
+			case MOVE_BACK : 
+				console.log('back');
+				moveBack = true;
+				break;
+			case MOVE_FORWARD : 
+				console.log('forward');
+				moveForward = true;
+				break;
+		}
+	}
+    
+    
+    
+	function clearKeyMove(event){
+		var code = event.keyCode;
+		switch(code){
+			case MOVE_UP : 
+				console.log('x : up');
+				moveUp = false;
+				break;
+			case MOVE_DOWN : 
+				console.log('x : down');
+				moveDown = false;
+				break;
+			case MOVE_LEFT : 
+				console.log('x : left');
+				moveLeft = false;
+				break;
+			case MOVE_RIGHT : 
+				console.log('x : right');
+				moveRight = false;
+				break;
+			case MOVE_BACK : 
+				console.log('x : back');
+				moveBack = false;
+				break;
+			case MOVE_FORWARD : 
+				console.log('x : forward');
+				moveForward = false;
+				break;
+		}				
+	}
+    
+    
+    
+    
+	function onWindowResize() {
+		
+		renderer.setSize( $window.width(), $window.height() );
+		camera.aspect = $window.width() / $window.width();
+		camera.updateProjectionMatrix();
+
+	}
+
+
+	function animate() {				
+		requestAnimationFrame( animate );
+		render();
+		//stats.update();
+	}
+	
+	
+	var frames = 0;
+	var lastDelta = 0,
+		currentDelta = 0;
+	function render() {
+		camera.lookAt( scene.position );
+		renderer.render( scene, camera );
+		//debugFrameInfo();
+	}
+	
+	function debugFrameInfo(){
+		if(frames%500 === 0){
+			currentDelta = clock.getDelta();
+			console.info(frames, lastDelta, currentDelta);
+			lastDelta = currentDelta;
+		}
+		frames++;
+	}
+
+
+</script>
+</body>
+</html>
