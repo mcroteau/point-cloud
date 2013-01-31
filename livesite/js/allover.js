@@ -1002,7 +1002,7 @@ Allover.viewer = {};
             this.stats = null;
         }
 
-        this.createSidebar( options, that );
+        //this.createSidebar( options, that );
 
         this.refreshCache = options.refreshCache;
 
@@ -1180,10 +1180,10 @@ Allover.viewer = {};
             };
         }
         var loadPercent = Math.round(pointcounter * 100 / features.length);
-        if (this.progressBar !== null) {
-          this.progressBar.element.show();
-          this.progressBar.coloredBar.attr('style', 'width: ' + loadPercent + '%');
-        }
+        // if (this.progressBar !== null) {
+        //   this.progressBar.element.show();
+        //   this.progressBar.coloredBar.attr('style', 'width: ' + loadPercent + '%');
+        // }
         
         var loadInterval = features.length / 100;
         for (var i = 0; i < loadInterval && features.length > pointcounter; i++, pointcounter++) {
@@ -1280,10 +1280,10 @@ Allover.viewer = {};
         this.pointBuckets.push(pointBucket);
 
         // setTimeout(function() { that.loadPoints(data.pk); }, 0);
-        if (this.progressBar !== null) {
-          this.progressBar.element.hide();
-          this.progressBar.statusText.html("Getting next slice");
-        }
+        // if (this.progressBar !== null) {
+        //   this.progressBar.element.hide();
+        //   this.progressBar.statusText.html("Getting next slice");
+        // }
 
         if (!this.firstLoad) { return; }
 
@@ -1336,7 +1336,7 @@ Allover.viewer = {};
         this.pbox.updateBounds();
 
 
-		addLines(this.scene, minx, miny, minz, midx, midy, midz, maxx, maxy, maxz)
+		this.addLines(this.scene, minx, miny, minz, midx, midy, midz, maxx, maxy, maxz)
 
 
         this.firstLoad = false;

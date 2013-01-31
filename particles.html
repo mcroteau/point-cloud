@@ -73,7 +73,7 @@
 			
 				$.ajax({
 					dataType: "json",
-					url: "data/points3.json",
+					url: "points3.json",
 					success: init
 				});
 				
@@ -163,6 +163,7 @@
 		        midx = halfx + minx;
 		        midy = halfy + miny;
 		        midz = halfz + minz;
+		
 		
 				controls.setInitialCenter(midx, midy, midz);
 				controls.setBoundingBox(geometry.boundingBox);

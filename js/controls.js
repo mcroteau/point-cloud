@@ -1,6 +1,6 @@
-/*! allover.js - ve06e593-dirty - 2012-11-29
+/*! allover.js - vfa834c2 - 2013-01-25
 * http://github.com/CRREL/allover.js
-* Copyright (c) 2012 Pete Gadomski; Licensed MIT */
+* Copyright (c) 2013 Pete Gadomski; Licensed MIT */
 
 THREE.QTControls = function ( camera, domElement ) {
 
@@ -15,7 +15,7 @@ THREE.QTControls = function ( camera, domElement ) {
 
   this.camera = camera;
 
-  var debug = true;
+  var debug = false;
 
   this.domElement = ( domElement !== undefined ) ? domElement : document;
   if ( domElement ) {
@@ -203,7 +203,7 @@ THREE.QTControls = function ( camera, domElement ) {
     return function () {
 
       if (typeof fn !== 'undefined') {
-      	fn.apply( scope, arguments );
+        fn.apply( scope, arguments );
       }
 
     };

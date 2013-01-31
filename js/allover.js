@@ -7,8 +7,8 @@ THREE.QTControls = function ( camera, domElement ) {
   // XXX Smarter
   var INITIAL_RADIUS = 200;
   var INITIAL_ROTATION = {
-    xy: 3,
-    z: 2
+	xy: 3,
+	z: 2
   };
   var MIN_RADIUS = 6;
   var MAX_RADIUS = 10000;
