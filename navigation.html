@@ -49,6 +49,7 @@
 
 <script src="js/Detector.js"></script>
 <script src="js/FirstPersonControls.js"></script>
+<script src="js/PointerLockControls.js"></script>
 
 <script type="text/javascript">
 
@@ -89,7 +90,8 @@
 		geometry = new THREE.Geometry();
 		clock = new THREE.Clock();
 		
-		controls = new THREE.FirstPersonControls(camera);
+		// controls = new THREE.FirstPersonControls(camera);
+		controls = new THREE.PointerLockControls(camera);
 		
 		// camera = new THREE.Camera( 3, window.innerWidth / window.innerHeight, -2000, 10000 );
 		// camera.projectionMatrix = THREE.Matrix4.makeOrtho( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, - 2000, 10000 );
