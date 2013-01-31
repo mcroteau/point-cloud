@@ -92,6 +92,7 @@
 		
 		// controls = new THREE.FirstPersonControls(camera);
 		controls = new THREE.PointerLockControls(camera);
+		controls.enabled = true;
 		
 		// camera = new THREE.Camera( 3, window.innerWidth / window.innerHeight, -2000, 10000 );
 		// camera.projectionMatrix = THREE.Matrix4.makeOrtho( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, - 2000, 10000 );
@@ -138,8 +139,36 @@
 		animate();
     
 	}
+
+
+	function animate() {				
+		requestAnimationFrame( animate );
+		render(clock.getDelta());
+		//stats.update();
+	}
+	
+	
+	function render(delta) {
+		camera.lookAt( scene.position );
+		renderer.render( scene, camera );
+		//controls.update(delta);
+		//debugFrameInfo();
+		//move(delta);
+	}
 	
     
+    
+	function onWindowResize() {
+		
+		renderer.setSize( $window.width(), $window.height() );
+		camera.aspect = $window.width() / $window.width();
+		camera.updateProjectionMatrix();
+
+	}
+
+
+
+
 	var LEFT_MOUSE_CLICK = 1,
 		MIDDLE_MOUSE_CLICK = 2,
 		RIGHT_MOUSE_CLICK = 3;
@@ -315,31 +344,7 @@
     
     
     
-    
-	function onWindowResize() {
-		
-		renderer.setSize( $window.width(), $window.height() );
-		camera.aspect = $window.width() / $window.width();
-		camera.updateProjectionMatrix();
 
-	}
-
-
-	function animate() {				
-		requestAnimationFrame( animate );
-		render(clock.getDelta());
-		//stats.update();
-	}
-	
-	
-	function render(delta) {
-		camera.lookAt( scene.position );
-		renderer.render( scene, camera );
-		controls.update(delta);
-		//debugFrameInfo();
-		//move(delta);
-	}
-	
 	
 	
 	var frames = 0;
