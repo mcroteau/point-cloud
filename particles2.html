@@ -40,11 +40,12 @@
 	<script src="js/jquery.js"></script>
 	<script src="js/three.min.js"></script>
 	<script src="js/jqmwheel.js"></script>
-	<script src="js/mwheelIntent.js"></script>
+	<!--<script src="js/mwheelIntent.js"></script>-->
 	<script src="js/stats.min.js"></script>
 
 	<script src="js/Detector.js"></script>
 	<script src="js/Controls.js"></script>
+	<script src="js/PointerLockControls.js"></script>
 
 	<script>
 
@@ -91,19 +92,19 @@
 			scene = new THREE.Scene();
 			geometry = new THREE.Geometry();
 							
-			controls = new THREE.QTControls(camera, containerDom);
+			//controls = new THREE.QTControls(camera, containerDom);
+			controls = new THREE.PointerLockControls(camera);
+			controls.enabled = true;
+			
 			clock = new THREE.Clock();
 
 			$(json.features).each(function(index, feature){
 				var vertex = new THREE.Vector3();
-				
 				vertex.x = feature.geometry.coordinates[0];
 				vertex.y = feature.geometry.coordinates[1];
 				vertex.z = feature.geometry.coordinates[2];
-				
 				geometry.vertices.push( vertex );
 			});
-			
 			
 			
 			geometry.computeBoundingBox();
@@ -138,7 +139,6 @@
 
 			scene.add( particles );
 
-
 	        geometry.computeBoundingBox();
 	        minx = geometry.boundingBox.min.x;
 	        miny = geometry.boundingBox.min.y;
@@ -161,8 +161,8 @@
 	        midz = halfz + minz;
 	
 	
-			controls.setInitialCenter(midx, midy, midz);
-			controls.setBoundingBox(geometry.boundingBox);
+			//controls.setInitialCenter(midx, midy, midz);
+			//controls.setBoundingBox(geometry.boundingBox);
 	
 			ysize = 10;
 			halfy = ysize / 2;
