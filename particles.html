@@ -40,12 +40,16 @@
 		<script src="js/jquery.js"></script>
 		<script src="js/three.min.js"></script>
 		<script src="js/jqmwheel.js"></script>
-		<script src="js/mwheelIntent.js"></script>
+		<!--<script src="js/mwheelIntent.js"></script>-->
+		
 		<script src="js/stats.min.js"></script>
 
 		<script src="js/Detector.js"></script>
-		<script src="js/Controls.js"></script>
-
+		<!-- <script src="js/Controls.js"></script> -->
+		
+		<script src="js/PointerLockControls.js"></script>
+		
+		
 		<script>
 
 		
@@ -73,7 +77,7 @@
 			
 				$.ajax({
 					dataType: "json",
-					url: "points3.json",
+					url: "pointsnew.json",
 					success: init
 				});
 				
@@ -88,13 +92,17 @@
 
 				//camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 1000 );
 				camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-			
+				var look = new THREE.Vector3(10, 10000, 10000);
+				camera.position.x = 1;
+				camera.position.y = 100;
+				camera.position.z = -10;
 
 				scene = new THREE.Scene();
 				geometry = new THREE.Geometry();
 				
 				
-				controls = new THREE.QTControls(camera, containerDom);
+				//controls = new THREE.QTControls(camera, containerDom);
+				//controls = new THREE.PointerLockControls(camera);
 				clock = new THREE.Clock();
 
 				
@@ -165,8 +173,9 @@
 		        midz = halfz + minz;
 		
 		
-				controls.setInitialCenter(midx, midy, midz);
-				controls.setBoundingBox(geometry.boundingBox);
+				//controls.setInitialCenter(midx, midy, midz);
+				//controls.setBoundingBox(geometry.boundingBox);
+		
 		
 				ysize = 10;
 				halfy = ysize / 2;
@@ -273,7 +282,7 @@
 			function render() {
 				camera.lookAt( scene.position );
 				renderer.render( scene, camera );
-				controls.update(clock.getDelta())
+				//controls.update(clock.getDelta())
 			}
 
 

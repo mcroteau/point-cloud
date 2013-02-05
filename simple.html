@@ -1,0 +1,180 @@
+<html>
+<head>
+<style>
+canvas { width: 100%; height: 100% }
+#controls{
+	position:absolute;
+	opacity:0.7;
+}
+a{
+	text-decoration:none;
+}
+</style>
+</head>
+<body>
+
+<div id="controls">
+	
+	<div id="axis">
+		<span class="wrap">
+			<h3>x axis</h3>
+			<a href="javascript:" class="plus" data-axis="x">+</a>
+			<a href="javascript:" class="minus" data-axis="x">-</a>
+		</span>
+		<span class="wrap">
+			<h3>y axis</h3>
+			<a href="javascript:" class="plus" data-axis="y">+</a>
+			<a href="javascript:" class="minus" data-axis="y">-</a>
+		</span>
+		<span class="wrap">
+			<h3>z axis</h3>
+			<a href="javascript:" class="plus" data-axis="z">+</a>
+			<a href="javascript:" class="minus" data-axis="z">-</a>
+		</span>	
+	</div>
+	
+	<div id="rotate">
+
+		<span class="rotations">
+			<h3>rotate x axis</h3>
+			<a href="javascript:" class="plus" data-axis="x">+</a>
+			<a href="javascript:" class="minus" data-axis="x">-</a>
+		</span>
+
+		<span class="rotations">
+			<h3>rotate y axis</h3>
+			<a href="javascript:" class="plus" data-axis="y">+</a>
+			<a href="javascript:" class="minus" data-axis="y">-</a>
+		</span>
+		
+		<span class="wrap">
+			<h3>rotate z axis</h3>
+			<a href="javascript:" class="plus" data-axis="z">+</a>
+			<a href="javascript:" class="minus" data-axis="z">-</a>
+		</span>
+
+	</div>	
+</div>
+
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+<script src="js/Three.js"></script>
+<script src="js/RequestAnimationFrame.js"></script>
+
+<script type="text/javascript">
+
+	var $controls = [];
+	
+	
+	$(document).ready(function(){
+		
+		
+		var scene = new THREE.Scene(); 
+		var camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 10000);  
+
+		var renderer = new THREE.WebGLRenderer(); 
+		renderer.setSize(window.innerWidth, window.innerHeight); 
+		document.body.appendChild(renderer.domElement);
+
+		var floorGeometry = new THREE.PlaneGeometry(30, 30, 30, 30);
+		var floorMaterial = new THREE.MeshBasicMaterial({
+			color : 0xFFCC00,
+		});
+
+		var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+
+		
+		scene.add(floor);  
+		
+		var x = -50, z = 100, y = 0;
+		camera.position.x = -50;
+		camera.position.z = 100;
+		// camera.position.x = 200;
+		// camera.position.z = 200;
+		camera.lookAt(new THREE.Vector3(50, 50, 10))
+
+		function render() { 
+			//requestAnimationFrame(render); 
+			renderer.render(scene, camera); 
+		} 
+
+
+		render();
+		
+		var rx = ry = rz = 50;
+		floor.rotation.x = rx;
+		floor.rotation.y = ry;
+		floor.rotation.z = rz;
+		
+		$rotate = $('#rotate');
+		$rotate.click(function(event){
+			var axis = $(event.target).attr('data-axis');
+			var operation = $(event.target).attr('class');
+			var incrementVal = getIncrementValue(operation);
+			
+			switch(axis){
+				case 'x' :
+					rx = rx + incrementVal;
+					break;
+				case 'y' :
+					ry = ry + incrementVal;
+					break;
+				case 'z' :
+					rz = rz + incrementVal;
+					break;
+			}
+			
+			console.log(rx, ry, rz);
+			
+			floor.rotation.x = rx;
+			floor.rotation.y = ry;
+			floor.rotation.z = rz;
+			
+			render();
+			
+		})		
+		
+		
+		$axis = $('#axis');
+		$axis.click(function(event){
+			var axis = $(event.target).attr('data-axis');
+			var operation = $(event.target).attr('class');
+			var incrementVal = getIncrementValue(operation);
+			
+			switch(axis){
+				case 'x' :
+					x = x + incrementVal;
+					break;
+				case 'y' :
+					y = y + incrementVal;
+					break;
+				case 'z' :
+					z = z + incrementVal;
+					break;
+			}
+			
+			console.log(x, y, z);
+			
+			camera.position.x = x;
+			camera.position.y = y;
+			camera.position.z = z;
+			
+			render();
+			
+		})
+		
+		function getIncrementValue(operation){
+			if(operation == 'minus') return -1;
+			return 1;
+		}
+		
+	});
+	
+	
+
+
+</script>
+
+</body>
+</html>

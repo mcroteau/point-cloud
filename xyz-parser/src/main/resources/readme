@@ -1,0 +1,8 @@
+# wordcount your xyz to discover how many lines
+wc -l /foo/some.xyz
+
+# convert 1000 lines of some.xyz to geojson
+java -cp target/xyz-parser-0.0.1-SNAPSHOT.jar sean.xyz.Main /foo/some.xyz /foo/some.json 1000
+
+# sample xyz
+http://pubs.usgs.gov/of/2004/1221/data/xyz/nphmos.zip
