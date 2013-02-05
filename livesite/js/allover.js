@@ -481,6 +481,7 @@ Allover.ProfileBox = function ( camera, domElement ) {
     this.uniforms[ 'xCenter' ].value = this.profileBox.position.x;
     this.uniforms[ 'yCenter' ].value = this.profileBox.position.y;
     this.uniforms[ 'zCenter' ].value = this.profileBox.position.z;
+	if(debug)console.log(this.uniforms);
 
   };
 

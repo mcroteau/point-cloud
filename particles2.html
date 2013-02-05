@@ -92,8 +92,8 @@
 			scene = new THREE.Scene();
 			geometry = new THREE.Geometry();
 							
-			//controls = new THREE.QTControls(camera, containerDom);
-			controls = new THREE.PointerLockControls(camera);
+			controls = new THREE.QTControls(camera, containerDom);
+			//controls = new THREE.PointerLockControls(camera);
 			controls.enabled = true;
 			
 			clock = new THREE.Clock();
@@ -161,8 +161,8 @@
 	        midz = halfz + minz;
 	
 	
-			//controls.setInitialCenter(midx, midy, midz);
-			//controls.setBoundingBox(geometry.boundingBox);
+			controls.setInitialCenter(midx, midy, midz);
+			controls.setBoundingBox(geometry.boundingBox);
 	
 			ysize = 10;
 			halfy = ysize / 2;
