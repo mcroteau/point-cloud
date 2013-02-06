@@ -1,0 +1,41 @@
+#!/bin/bash
+
+print-usage(){
+	funcs=$(function-list)
+	
+	echo "Usage : $(basename $0) [ $(echo ${funcs} | sed 's/ / | /g') ]"
+	
+	for func in ${funcs}; do
+		echo -en "\t${func}\t"
+		if [ ! -z $(declare -F ${CMD_PREFIX}-${func}-usage ) ]; then
+			${CMD_PREFIX}-${func}-usage
+		else
+			echo
+		fi
+	done
+	
+}
+
+
+function-list(){
+	echo $(declare -F | awk -F ' ' '{print $3}' | grep "^${CMD_PREFIX}-" | grep -v "^${CMD_PREFIX}-.*usage$" | sed "s/${CMD_PREFIX}-//g")
+}
+
+run-cmd(){
+	cmd=${CMD_PREFIX}-$1
+	shift 1
+	if [ ! -z $(declare -F ${cmd} | grep -v ${cmd}-usage) ]; then
+		${cmd} $@
+		return 0
+	fi
+	return 1
+}
+
+
+#default command prefix to cmd
+CMD_PREFIX=${CMD_PREFIX:-cmd}
+
+run-cmd $@
+if [[ 0 != $? ]]; then
+	print-usage $@
+fi

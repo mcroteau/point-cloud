@@ -1,0 +1,19 @@
+#!/bin/bash
+
+prop-file(){
+	echo ${SCRIPT_DIR}/etc/properties/${ENVIRONMENT}.properties
+}
+
+
+prop-list(){
+	cat $(prop-file) | grep -v "^$" | grep -v "^#"
+}
+
+
+prop-edit(){
+	vim $(prop-file)
+}
+
+
+CMD_PREFIX=prop
+. ${CMD_SCRIPT_BASE}

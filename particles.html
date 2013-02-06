@@ -45,7 +45,7 @@
 		<script src="js/stats.min.js"></script>
 
 		<script src="js/Detector.js"></script>
-		<!-- <script src="js/Controls.js"></script> -->
+		<script src="js/Controls.js"></script>
 		
 		<script src="js/PointerLockControls.js"></script>
 		
@@ -77,7 +77,7 @@
 			
 				$.ajax({
 					dataType: "json",
-					url: "pointsnew.json",
+					url: "points1.json",
 					success: init
 				});
 				
@@ -101,7 +101,7 @@
 				geometry = new THREE.Geometry();
 				
 				
-				//controls = new THREE.QTControls(camera, containerDom);
+				controls = new THREE.QTControls(camera, containerDom);
 				//controls = new THREE.PointerLockControls(camera);
 				clock = new THREE.Clock();
 
@@ -173,8 +173,8 @@
 		        midz = halfz + minz;
 		
 		
-				//controls.setInitialCenter(midx, midy, midz);
-				//controls.setBoundingBox(geometry.boundingBox);
+				controls.setInitialCenter(midx, midy, midz);
+				controls.setBoundingBox(geometry.boundingBox);
 		
 		
 				ysize = 10;
@@ -280,9 +280,9 @@
 			
 
 			function render() {
-				camera.lookAt( scene.position );
+				//camera.lookAt( scene.position );
 				renderer.render( scene, camera );
-				//controls.update(clock.getDelta())
+				controls.update(clock.getDelta())
 			}
 
 

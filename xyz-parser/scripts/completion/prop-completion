@@ -1,0 +1,41 @@
+#!/bin/bash
+
+__prop_name_complete(){
+	COMPREPLY=()
+	
+	if [[ ${COM_CWORD} == 2 ]]; then
+		cur="${COMP_WORDS[COMP_CWORD]}"
+		values=$({COMP_WORDS[0]} list | grep -v "^#" | cut -d '=' -f1 )
+		
+		COMPREPLY=( $(compgen -W "${values}" -- ${cur}) )
+	
+	fi
+	
+	return
+}
+
+_prop_complete(){
+
+	opts="file list edit"
+	cur="${COMP_WORDS[COMP_CWORD]}"
+	
+	
+	for cmd in ${opts}; do
+		if [[ ${COMP_WORDS[1]} == ${cmd} ]]; then
+			#set up a default COMPREPLY
+			COMPREPLY=()
+			
+			case ${cmd} in
+				get) __prop_name_complete ;;
+			esac
+			
+			return
+		fi
+	done
+	
+	#If not found simply provide the list of opts as the COMPREPLY
+	COMPREPLY=( $(compgen -W "${opts}" -- ${curl}) )
+	return
+}
+
+complete -F _prop_complete prop

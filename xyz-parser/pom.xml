@@ -43,6 +43,23 @@
 
     <build>
         <plugins>
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<finalName>xyz-parser</finalName>
+					<outputDirectory>${project.basedir}/target/staging</outputDirectory>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+			    <version>2.3</version>
+			    <configuration>
+			        <descriptors>
+			            <descriptor>assembly.xml</descriptor>
+			        </descriptors>
+			        <finalName>xyz-parser</finalName>
+			    </configuration>
+			</plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

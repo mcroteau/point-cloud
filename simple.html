@@ -87,15 +87,19 @@ a{
 		
 		scene.add(floor);  
 		
-		var x = -50, z = 100, y = 0;
-		camera.position.x = -50;
+		var x = 0, z = 143, y = 0;
+		camera.position.x = 0;
+		camera.position.y = 0;
 		camera.position.z = 100;
-		// camera.position.x = 200;
-		// camera.position.z = 200;
-		camera.lookAt(new THREE.Vector3(50, 50, 10))
+		
+		console.log(scene.position);
+
+		addLines(floorGeometry, scene)
 
 		function render() { 
 			//requestAnimationFrame(render); 
+			console.log(scene.position);
+			camera.lookAt(scene.position)
 			renderer.render(scene, camera); 
 		} 
 
@@ -170,6 +174,60 @@ a{
 		}
 		
 	});
+	
+	
+	function addLines(geometry, scene){
+		
+		geometry.computeBoundingBox();
+        var minx = geometry.boundingBox.min.x;
+        var miny = geometry.boundingBox.min.y;
+        var minz = geometry.boundingBox.min.z;
+        var maxx = geometry.boundingBox.max.x;
+        var maxy = geometry.boundingBox.max.y;
+        var maxz = geometry.boundingBox.max.z;
+
+        var xsize = (maxx - minx);
+        var ysize = (maxy - miny);
+        var zsize = (maxz - minz);
+
+        var halfx = xsize / 2;
+        var halfy = ysize / 2;
+        var halfz = zsize / 2;
+
+        var midx = halfx + minx;
+        var midy = halfy + miny;
+        var midz = halfz + minz;
+
+		var xLineMat = new THREE.LineBasicMaterial({
+            color: 0xcc0000, opacity: 0.5, linewidth: 1
+        });
+        var xLineGeom = new THREE.Geometry();
+        xLineGeom.vertices.push(new THREE.Vector3(minx, midy, 0));
+        xLineGeom.vertices.push(new THREE.Vector3(maxx, midy, 0));
+
+        var yLineMat = new THREE.LineBasicMaterial({
+            color: 0x0000cc, opacity: 0.5, linewidth: 1
+        });
+        var yLineGeom = new THREE.Geometry();
+        yLineGeom.vertices.push(new THREE.Vector3(midx, miny, 0));
+        yLineGeom.vertices.push(new THREE.Vector3(midx, maxy, 0));
+
+        var zLineMat = new THREE.LineBasicMaterial({
+            color: 0x00cc00, opacity: 0.5, linewidth: 1
+        });
+        var zLineGeom = new THREE.Geometry();
+        zLineGeom.vertices.push(new THREE.Vector3(midx, midy, Math.min(0, minz)));
+        zLineGeom.vertices.push(new THREE.Vector3(midx, midy, Math.max(0, maxz)));
+
+        var xLine = new THREE.Line(xLineGeom, xLineMat);
+        var yLine = new THREE.Line(yLineGeom, yLineMat);
+        var zLine = new THREE.Line(zLineGeom, zLineMat);
+
+        scene.add(xLine);
+        scene.add(yLine);
+        scene.add(zLine);
+	}
+	
 	
 	
 

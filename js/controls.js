@@ -15,7 +15,7 @@ THREE.QTControls = function ( camera, domElement ) {
 
   this.camera = camera;
 
-  var debug = false;
+  var debug = true;
 
   this.domElement = ( domElement !== undefined ) ? domElement : document;
   if ( domElement ) {
@@ -96,6 +96,12 @@ THREE.QTControls = function ( camera, domElement ) {
 
   this.update = function( delta ) {
 
+	// if(debug){
+	// 	console.log(this.rotation.xy, this.destinationRotation.xy, this.rotation.xy * 0.92 + this.destinationRotation.xy * 0.02)
+	// 	console.log(this.rotation.z, this.destinationRotation.z, this.rotation.z * 0.92 + this.destinationRotation.z * 0.02)
+	// 	console.log(this.radius, this.destinationRadius, this.radius * 0.9 + this.destinationRadius * 0.1)
+	// }
+	
     this.rotation.xy = this.rotation.xy * 0.92 + this.destinationRotation.xy * 0.02;
     this.rotation.z = this.rotation.z * 0.92 + this.destinationRotation.z * 0.02;
     this.radius = this.radius * 0.9 + this.destinationRadius * 0.1;
@@ -118,6 +124,7 @@ THREE.QTControls = function ( camera, domElement ) {
           " &mdash; Z position: " + Math.round(this.camera.position.z) +
           " &mdash; xy rotation: " + Number((this.rotation.xy).toFixed(3)) +
           " &mdash; z rotation: " + Number((this.rotation.z).toFixed(3)));
+
     }
 
     var v = new THREE.Vector3(this.center.x, this.center.y, this.center.z);
@@ -126,11 +133,13 @@ THREE.QTControls = function ( camera, domElement ) {
 
   };
 
+
   this.reset = function() {
     this.adjustCameraPosition(INITIAL_ROTATION);
     this.adjustRadius(INITIAL_RADIUS, false);
     this.adjustCenter(this.initialCenter);
   };
+
 
   this.adjustCameraPosition = function(rotation) {
     this.destinationRotation = $.extend({}, rotation);

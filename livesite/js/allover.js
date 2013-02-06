@@ -133,6 +133,10 @@ THREE.QTControls = function ( camera, domElement ) {
   };
 
   this.adjustCameraPosition = function(rotation) {
+	if(debug){
+		console.log(rotation)
+	}
+	
     this.destinationRotation = $.extend({}, rotation);
   };
 
