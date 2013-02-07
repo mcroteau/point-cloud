@@ -74,15 +74,7 @@
 				containerDom = {};
 
 			$(document).ready(function(){
-			
-				$.ajax({
-					dataType: "json",
-					url: "xyz-parser/data/points1.json",
-					success: init
-				}).done(function(){
-					
-				});
-				
+				init();
 			})
 
 	        var minx = 0;
@@ -104,35 +96,31 @@
 	        var midy = 0;
 	        var midz = 0;
 	
-			var finalFile = false;
+	
+			var firstLoad = true,
+				finalLoad = false;
 
 
-
-			function addPoints(json){
-				
+			function loadData(){
+				$.ajax({
+					dataType: "json",
+					url: "xyz-parser/data/points20.json",
+					success: addPoints
+				}).done(function(){
+					$.ajax({
+						dataType: "json",
+						url: "xyz-parser/data/points40.json",
+						success: addPoints
+					}).done(function(){
+						finalLoad = true;
+						addPoints({});
+					})	
+				});				
 			}
-
-			function init(json) {
 			
+			var totalParticles = 0;
 			
-				$container = $('#container');
-				containerDom = $container[0];
-
-				//camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 1000 );
-				camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-				var look = new THREE.Vector3(10, 10000, 10000);
-				camera.position.x = 1;
-				camera.position.y = 100;
-				camera.position.z = -10;
-
-				scene = new THREE.Scene();
-				geometry = new THREE.Geometry();
-				
-				
-				controls = new THREE.QTControls(camera, containerDom);
-				//controls = new THREE.PointerLockControls(camera);
-				clock = new THREE.Clock();
-
+			function addPoints(json){
 				
 				$(json.features).each(function(index, feature){
 					var vertex = new THREE.Vector3();
@@ -142,6 +130,7 @@
 					vertex.z = feature.geometry.coordinates[2];
 					
 					geometry.vertices.push( vertex );
+					totalParticles++;
 				});
 				
 				
@@ -166,19 +155,24 @@
 		        midz = halfz + minz;
 		
 		
-		
 				$(geometry.vertices).each(function(index, vertex){
 					vertex.x = vertex.x - midx;
 		          	vertex.y = vertex.y - midy;
 		          	vertex.z = vertex.z - midz;
 				});
 
+		
 				material = new THREE.ParticleBasicMaterial( { size: 1, color : 0xBFE2E3 } );
 				particles = new THREE.ParticleSystem( geometry, material );
 
+				if(totalParticles > 200000)console.log(particles);
 				scene.add( particles );
 
+				
+				console.log(totalParticles)
 
+		        if (!firstLoad) { return; }
+		
 		        geometry.computeBoundingBox();
 		        minx = geometry.boundingBox.min.x;
 		        miny = geometry.boundingBox.min.y;
@@ -198,18 +192,45 @@
 		        // Display axis
 		        midx = halfx + minx;
 		        midy = halfy + miny;
-		        midz = halfz + minz;
+		        midz = halfz + minz;	
 		
-		
-				controls.setInitialCenter(midx, midy, midz);
-				controls.setBoundingBox(geometry.boundingBox);
 		
 		
 				ysize = 10;
 				halfy = ysize / 2;
+							
+				firstLoad = false;
+				
+				if(finalLoad){
+					controls.setInitialCenter(midx, midy, midz);
+					controls.setBoundingBox(geometry.boundingBox);
+				}
+				
+					animate();
+					clock.start();
+				
+			}
+
+			function init() {
 			
-				addLines(scene, minx, miny, minz, midx, midy, midz, maxx, maxy, maxz)
-	
+				$container = $('#container');
+				containerDom = $container[0];
+
+				//camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 1000 );
+				camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+				var look = new THREE.Vector3(10, 10000, 10000);
+				camera.position.x = 1;
+				camera.position.y = 100;
+				camera.position.z = -10;
+
+				scene = new THREE.Scene();
+				geometry = new THREE.Geometry();
+				
+				
+				controls = new THREE.QTControls(camera, containerDom);
+				//controls = new THREE.PointerLockControls(camera);
+				clock = new THREE.Clock();
+
 		
 				renderer = new THREE.WebGLRenderer();
 				renderer.setSize( window.innerWidth, window.innerHeight );
@@ -222,12 +243,16 @@
 
 				window.addEventListener( 'resize', onWindowResize, false );
 
-				animate();
-				clock.start();
 				
-				addKeyEvents();
-				
+				loadData();
 			}
+			
+			function finishLoading(){
+				addLines(scene, minx, miny, minz, midx, midy, midz, maxx, maxy, maxz)
+			}
+			
+			
+			
 
 			var UP_ARROW = 38,
 				DOWN_ARROW = 40,
