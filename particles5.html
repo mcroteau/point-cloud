@@ -1,0 +1,69 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - particles</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background-color: #000000;
+				margin: 0px;
+				overflow: hidden;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+				font-weight: bold;
+				text-align:center;
+			}
+
+			#container {
+	      		position: absolute;
+	      		top: 0px; 
+				left: 0px;
+	      		bottom:0px;
+				right:0px;
+				height: 100%;
+	      		background: #000;
+	      		padding: 0;
+	      		margin: 0;
+	      		overflow: hidden;
+	      	}
+
+		</style>
+	</head>
+	<body>
+
+		<div id="container"></div>
+		
+		
+		
+		<script>
+		
+			var worker = new Worker('dataworker.js');
+			        	
+			worker.addEventListener('message', function(message) {
+				console.log(message.data.id + " complete");
+			}, false);
+			        	
+			var message1 = {
+				id  : 1,
+				url : 'xyz-parser/data/points0.json'
+			}
+			var message2 = {
+				id  : 2,
+				url : 'xyz-parser/data/points1.json'
+			}
+			var message3 = {
+				id  : 3,
+				url : 'xyz-parser/data/points10.json'
+			}
+			
+			worker.postMessage(message1); 
+			worker.postMessage(message2);
+			worker.postMessage(message3);
+			
+
+		</script>
+	</body>
+</html>

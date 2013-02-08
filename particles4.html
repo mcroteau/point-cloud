@@ -74,7 +74,16 @@
 				containerDom = {};
 
 			$(document).ready(function(){
-				init();
+				
+				var worker = new Worker('workers/dataworker.js');
+
+				worker.addEventListener('message', function(e) {
+					console.log('finished loading data')
+					console.log(e)
+				}, false);
+
+				worker.postMessage('../xyz-parser/data/points0.json'); // Send data to our worker.
+				
 			})
 
 	        var minx = 0;
@@ -103,32 +112,148 @@
 			
 			function loadData(){
 				
+			
 				
-				animate();
-				clock.start();
-				addPoints(10);
-				addPoints(10);
-				addPoints(10);
+				// function showData(data1, data2) {
+				//     alert(data1[0].max_id);
+				//     alert(data2[0].max_id);
+				// }
+				// function independent(){
+				//     alert('independent');    
+				// }
+				// 
+				// function method1() {
+				//     return $.ajax("xyz-parser/data/points0.json", {
+				//         success : independent
+				//     });
+				// }
+				// 
+				// function method2() {
+				//     return $.ajax("xyz-parser/data/points1.json", {
+				// 		success : independent
+				//     });
+				// }
+				// 
+				// $.when(method1(), method2()).then(showData);
 				
-				controls.setInitialCenter(midx, midy, midz);
-				controls.setBoundingBox(geometry.boundingBox);	
+				// material = new THREE.ParticleBasicMaterial( { size: 1, color : 0xBFE2E3 } );
+				// particles = new THREE.ParticleSystem( geometry, material );
+				// 
+				// $.ajax({
+				// 	dataType: "json",
+				// 	url: "xyz-parser/data/points0.json",
+				// 	success: addPoints
+				// }).done(function(){
+				// 	$.ajax({
+				// 		dataType: "json",
+				// 		url: "xyz-parser/data/points1.json",
+				// 		success: addPoints
+				// 	}).done(function(){
+				// 		$.ajax({
+				// 			dataType: "json",
+				// 			url: "xyz-parser/data/points2.json",
+				// 			success: addPoints
+				// 		}).done(function(){
+				// 			$.ajax({
+				// 				dataType: "json",
+				// 				url: "xyz-parser/data/points3.json",
+				// 				success: addPoints
+				// 			}).done(function(){
+				// 				$.ajax({
+				// 					dataType: "json",
+				// 					url: "xyz-parser/data/points4.json",
+				// 					success: addPoints
+				// 				}).done(function(){
+				// 					$.ajax({
+				// 						dataType: "json",
+				// 						url: "xyz-parser/data/points5.json",
+				// 						success: addPoints
+				// 					}).done(function(){
+				// 						$.ajax({
+				// 							dataType: "json",
+				// 							url: "xyz-parser/data/points6.json",
+				// 							success: addPoints
+				// 						}).done(function(){
+				// 							$.ajax({
+				// 								dataType: "json",
+				// 								url: "xyz-parser/data/points7.json",
+				// 								success: addPoints
+				// 							}).done(function(){
+				// 								$.ajax({
+				// 									dataType: "json",
+				// 									url: "xyz-parser/data/points8.json",
+				// 									success: addPoints
+				// 								}).done(function(){
+				// 									$.ajax({
+				// 										dataType: "json",
+				// 										url: "xyz-parser/data/points9.json",
+				// 										success: addPoints
+				// 									}).done(function(){
+				// 										$.ajax({
+				// 											dataType: "json",
+				// 											url: "xyz-parser/data/points10.json",
+				// 											success: addPoints
+				// 										}).done(function(){
+				// 											$.ajax({
+				// 												dataType: "json",
+				// 												url: "xyz-parser/data/points11.json",
+				// 												success: addPoints
+				// 											}).done(function(){
+				// 												$.ajax({
+				// 													dataType: "json",
+				// 													url: "xyz-parser/data/points12.json",
+				// 													success: addPoints
+				// 												}).done(function(){
+				// 													$.ajax({
+				// 														dataType: "json",
+				// 														url: "xyz-parser/data/points13.json",
+				// 														success: addPoints
+				// 													}).done(function(){
+				// 														$.ajax({
+				// 															dataType: "json",
+				// 															url: "xyz-parser/data/points14.json",
+				// 															success: addPoints
+				// 														}).done(function(){
+				// 															$.ajax({
+				// 																dataType: "json",
+				// 																url: "xyz-parser/data/points15.json",
+				// 																success: addPoints
+				// 															}).done(function(){
+				// 																animate();
+				// 																clock.start();
+				// 																controls.setInitialCenter(midx, midy, midz);
+				// 																controls.setBoundingBox(geometry.boundingBox);
+				// 															})
+				// 														})
+				// 													})
+				// 												})
+				// 											})
+				// 										})
+				// 									})
+				// 								})
+				// 							})
+				// 						})
+				// 					})
+				// 				})
+				// 			})
+				// 		})
+				// 	})
+				// });
+				// 
 			}
 
 			var totalParticles = 0;
-			function addPoints(numberOfPoints){
+			function addPoints(json){
 				
-				
-				for(var i = 0; i < numberOfPoints; i++){
-					
+				$(json.features).each(function(index, feature){
 					var vertex = new THREE.Vector3();
-					vertex.x = Math.floor((Math.random() * 20) + 1);
-					vertex.y = Math.floor((Math.random() * 20) + 1);
-					vertex.z = Math.floor((Math.random() * 20) + 1);
-					
-					geometry.vertices.push(vertex);
+					vertex.x = feature.geometry.coordinates[0];
+					vertex.y = feature.geometry.coordinates[1];
+					vertex.z = feature.geometry.coordinates[2];
+					geometry.vertices.push( vertex );
 					totalParticles++;
-				}
-
+				});
+				
 				geometry.computeBoundingBox();
 				minx = geometry.boundingBox.min.x;
 				miny = geometry.boundingBox.min.y;
@@ -159,10 +284,7 @@
 				// });
 				// 
 				// 		
-				material = new THREE.ParticleBasicMaterial( { size: 2, color : 0xBFE2E3 } );
-				particles = new THREE.ParticleSystem( geometry, material );
-
-				if(totalParticles > 200000)console.log(particles);
+				console.log(particles);
 				scene.add( particles );
 
 				// 
@@ -198,7 +320,6 @@
 				// 			
 				// firstLoad = false;
 				
-				
 			}
 
 			function init() {
@@ -232,10 +353,10 @@
 				$container.append( stats.domElement );
 
 				window.addEventListener( 'resize', onWindowResize, false );
-
-				
+	
 				loadData();
 			}
+			
 			
 			function finishLoading(){
 				addLines(scene, minx, miny, minz, midx, midy, midz, maxx, maxy, maxz)
