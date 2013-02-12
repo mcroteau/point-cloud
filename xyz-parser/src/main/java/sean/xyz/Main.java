@@ -21,7 +21,7 @@ public class Main {
         try {
     
 			if(args.length < 1)
-				System.out.print("Must specify action : geojson");
+				System.out.print("Must specify action : geojson, stats");
 				
 			String actionName = args[0];
 			Action action = null;
@@ -33,7 +33,7 @@ public class Main {
 			if(action != null){
 				action.handleAction(args);
 			}else{
-				System.out.print("Action did not match : geojson");
+				System.out.print("Action did not match : geojson, stats");
 			}
     	} catch (Exception e) {
             e.printStackTrace();

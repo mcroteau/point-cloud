@@ -8,13 +8,5 @@ xyz-geojson-usage(){
 	echo "--in [FILE] --out [FILE] --max [max_lines(1000)] <--delim [,]> <--parts[num_output_files(5)]><--skip[include_every(3)]>"
 }
 
-xyz-stats(){
-	java -cp "${SCRIPT_DIR}/lib/*" sean.xyz.Main stats $@
-}
-
-xyz-stats-usage(){
-	echo "--in [FILE] <--delim [,] --threads[max_threads(5)]>"
-}
-
 CMD_PREFIX=xyz
 . ${CMD_SCRIPT_BASE}

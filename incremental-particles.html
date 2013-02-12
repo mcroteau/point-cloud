@@ -1,0 +1,217 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - particles</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background-color: #000000;
+				margin: 0px;
+				overflow: hidden;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+				font-weight: bold;
+				text-align:center;
+			}
+
+			a {
+				color:#0078ff;
+			}
+
+			#info {
+				color: #fff;
+				position: absolute;
+				top: 0px; width: 100%;
+				padding: 5px;
+				z-index: 100;
+			}
+
+		</style>
+	</head>
+	<body>
+
+		<div id="info">
+			<a href="http://threejs.org" target="_blank">three.js</a> - webgl particles example
+		</div>
+
+		<script src="js/three.min.js"></script>
+
+		<script src="js/Detector.js"></script>
+		<script src="js/stats.min.js"></script>
+
+		<script>
+
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+			var container, stats;
+			var camera, scene, renderer, particles, geometry, materials = [], parameters, i, h, color;
+			var mouseX = 0, mouseY = 0;
+
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+
+			init();
+			animate();
+
+			var total = 0;
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 3000 );
+				camera.position.z = 1000;
+
+				scene = new THREE.Scene();
+				scene.fog = new THREE.FogExp2( 0x000000, 0.0007 );
+
+				planeGeometry = new THREE.PlaneGeometry();
+				geometry = new THREE.Geometry();
+				geometries = [];
+				count = 0;
+				function addVertices(){
+					
+					if(count >= 3){
+						console.log('interval')
+						clearInterval(interval);
+						interval = 0;
+						console.info(bounds.minx, bounds.miny, bounds.minz, bounds.maxx, bounds.maxy, bounds.maxz);
+					}
+					
+					
+					count++;
+					geometry = new THREE.Geometry();
+					
+					for ( i = 0; i < 1500; i ++ ) {
+
+						var vertex = new THREE.Vector3();
+						vertex.x = Math.random() * 2000 - (Math.random() *1000)) + 50;
+						vertex.y = Math.random() * 2000 - (Math.random() *1000)) ;
+						vertex.z = Math.random() * 2000 - (Math.random() *1000);
+
+						geometry.vertices.push( vertex );
+						total++;
+					}
+					
+					material = new THREE.ParticleBasicMaterial( { size: 2, color:0xEFEFEF } );
+					particles = new THREE.ParticleSystem( geometry, material );
+					scene.add( particles );
+					
+					geometries.push(geometry);
+					recalculateBoundsAddPlane();
+					
+				}
+				
+				
+				var bounds = {
+					minx : 0,
+					miny : 0,
+					minz : 0,
+					maxx : 0,
+					maxy : 0,
+					maxz : 0
+				}
+				
+				function recalculateBoundsAddPlane(){
+					
+					for(var m = 0; m < geometries.length; m++){
+						var geometry = geometries[m];
+						geometry.computeBoundingBox();
+				        var minx = geometry.boundingBox.min.x;
+				        var miny = geometry.boundingBox.min.y;
+				        var minz = geometry.boundingBox.min.z;
+				        var maxx = geometry.boundingBox.max.x;
+				        var maxy = geometry.boundingBox.max.y;
+				        var maxz = geometry.boundingBox.max.z;
+				
+						if(minx < bounds.minx)bounds.minx = minx;
+						if(miny < bounds.miny)bounds.miny = miny;
+						if(minz < bounds.minz)bounds.minz = minz;
+						if(maxx > bounds.maxx)bounds.maxx = maxx;
+						if(maxy > bounds.maxy)bounds.maxy = maxy;
+						if(maxz > bounds.maxz)bounds.maxz = maxz;
+						
+						//console.log(minx, miny, minz, maxx, maxy, maxz);
+						
+					}
+					
+					console.info(bounds.minx, bounds.miny, bounds.minz, bounds.maxx, bounds.maxy, bounds.maxz);
+					
+				}
+				
+				
+				addVertices();
+
+				
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				container.appendChild( stats.domElement );
+
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				window.addEventListener( 'resize', onWindowResize, false );
+				
+				var interval = 0;
+
+				if(interval === 0){
+					interval = setInterval(function(){
+                		console.info("add additional vertices.  total " + total);
+						addVertices();
+					}, 5000)
+				}
+				
+
+			}
+
+			function onWindowResize() {
+
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function onDocumentMouseMove( event ) {
+
+				mouseX = event.clientX - windowHalfX;
+				mouseY = event.clientY - windowHalfY;
+
+			}
+
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				render();
+				stats.update();
+
+			}
+
+			function render() {
+
+				var time = Date.now() * 0.00005;
+
+				camera.position.x += ( mouseX - camera.position.x ) * 0.05;
+				camera.position.y += ( - mouseY - camera.position.y ) * 0.05;
+
+				camera.lookAt( scene.position );
+				renderer.render( scene, camera );
+
+			}
+
+
+		</script>
+	</body>
+</html>

@@ -1,0 +1,258 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - particles</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background-color: #000000;
+				margin: 0px;
+				overflow: hidden;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+				font-weight: bold;
+				text-align:center;
+			}
+
+			#container {
+	      		position: absolute;
+	      		top: 0px; 
+				left: 0px;
+	      		bottom:0px;
+				right:0px;
+				height: 100%;
+	      		background: #000;
+	      		padding: 0;
+	      		margin: 0;
+	      		overflow: hidden;
+	      	}
+			
+			#stats{
+				width:250px;
+				font-size:11px;
+				color:#ccc;
+			}
+			#stats span{
+				margin:0px 5px;
+				display:inline-block;
+				text-align:left;
+			}
+		</style>
+	</head>
+	<body>
+
+		<div id="system"></div>
+		
+		
+		<script src="js/jquery.js"></script>
+		<script src="js/three.min.js"></script>
+		<script src="js/jqmwheel.js"></script>
+		
+		<script src="js/stats.min.js"></script>
+
+		<script src="js/Detector.js"></script>
+		<script src="js/Controls.js"></script>
+		
+			
+		<script>
+		
+		
+			var $system = [];
+			var camera, scene, renderer;
+			var mouseX = 0, mouseY = 0;
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+			
+			var total = 0;
+			
+			function setupParticleSystem(){
+				$system = $('#system');
+				console.log($system);
+				
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 500000 );
+				camera.position.z = 10000;
+				
+				scene = new THREE.Scene();
+				scene.fog = new THREE.FogExp2( 0x000000, 0.0007 );
+				clock = new THREE.Clock();
+				
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				$system.append( renderer.domElement );
+				
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				animate();
+			}
+			
+			
+			
+			function addVertices(json){
+				
+				if(typeof json === 'string')json = $.parseJSON(json);
+				
+				geometry = new THREE.Geometry();
+				$(json.features).each(function(index, feature){
+					var vertex = new THREE.Vector3();
+					
+					vertex.x = feature.geometry.coordinates[0];
+					vertex.y = feature.geometry.coordinates[1];
+					vertex.z = feature.geometry.coordinates[2];
+					console.log(vertex)
+					geometry.vertices.push( vertex );
+					total++;
+				});
+				
+				material = new THREE.ParticleBasicMaterial( { size: 20000, color:0xEFEFEF } );
+				particles = new THREE.ParticleSystem( geometry, material );
+				scene.add( particles );
+			}
+						
+			
+			
+			
+			function addVerticesOld(){
+				
+				geometry = new THREE.Geometry();
+				for ( i = 0; i < 1500; i ++ ) {
+
+					var vertex = new THREE.Vector3();
+					vertex.x = Math.random() * 2000 - (Math.random() *1000);
+					vertex.y = Math.random() * 2000 - (Math.random() *1000);
+					vertex.z = Math.random() * 2000 - (Math.random() *1000);
+
+					geometry.vertices.push( vertex );
+					total++;
+				}
+				
+				material = new THREE.ParticleBasicMaterial( { size: 2, color:0xEFEFEF } );
+				particles = new THREE.ParticleSystem( geometry, material );
+				scene.add( particles );
+			}
+			
+			
+			function onDocumentMouseMove( event ) {
+				mouseX = event.clientX - windowHalfX;
+				mouseY = event.clientY - windowHalfY;
+			}
+			
+			function animate() {
+				requestAnimationFrame( animate );
+				render();
+			}
+
+			function render() {
+				// camera.lookAt( scene.position );
+				camera.position.x += ( mouseX - camera.position.x ) * 0.05;
+				camera.position.y += ( - mouseY - camera.position.y ) * 0.05;
+				renderer.render( scene, camera );
+			}
+			
+			
+			
+		
+			var FILES_TO_PROCESS = 20;
+			var BASE_URL = 'xyz-parser/data/';
+			var BATCH_SIZE = 5;
+			
+			var files = {
+				total : 0,
+				processed : 0,
+				files : {},
+				complete : {},
+				processing : {},
+				totalComplete : 0,
+				totalProcessing : 0,
+				totalFailed : 0
+			};
+			
+			function createFilesObject(){
+				for(var m = 0; m < FILES_TO_PROCESS; m++){
+					var file = {
+						id     : m,
+						status : '',
+						url    : BASE_URL + 'points' + m + '.json'
+					}
+					files.files[m] = file;
+					files.total++;
+				}
+			}
+			
+
+			
+			var timer = 0;
+			
+			var loadFiles = function(check){
+				
+				if(check){
+					console.warn(files);
+				}
+				
+				if(!$.isEmptyObject(files.files)){
+					
+					while(files.totalProcessing < BATCH_SIZE){
+						
+						var worker = new Worker('dataworker.js');
+						
+						var file = getFirstFile();
+						if(!$.isEmptyObject(file)){
+							worker.addEventListener('message', function(message) {
+								if(files.processing.hasOwnProperty(message.data.id)){
+									if(!files.complete.hasOwnProperty(message.data.id)){
+			                			files.complete[message.data.id] = files.processing[message.data.id];
+										delete files.processing[message.data.id];
+										files.totalProcessing -= 1;
+										files.totalComplete +=1;
+										console.info(message.data.id + " complete");
+										addVertices(message.data.data);
+									}
+									loadFiles();
+								} 
+							}, false);
+
+							worker.postMessage(file);
+							files.processing[file.id] = file;
+							delete files.files[file.id];
+							files.totalProcessing += 1;
+						}						
+					}
+					
+				} else{
+					if($.isEmptyObject(files.processing)){
+						console.info("processed all files");
+					}else{
+						console.warn(files.processing);
+					}	
+				}
+			}
+			
+			
+			function getFirstFile(){
+				var file = {};
+				for(var id in files.files){
+					if(id != 'undefined')file = files.files[id];
+					if(id === 'undefined')delete files.files[id];
+					break;
+				}
+				return file;
+			}
+			
+			
+			
+
+								
+			$(document).ready(function(){
+				setupParticleSystem();
+				createFilesObject();
+				loadFiles();
+			})
+			
+			
+			
+			
+			
+		</script>
+	</body>
+</html>

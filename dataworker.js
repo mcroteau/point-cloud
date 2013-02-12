@@ -11,7 +11,7 @@ self.addEventListener('message', function(message) {
     http.open("GET", url, false);
     http.send();
 	
-	self.postMessage({id : message.data.id, status : 'started'})
+	//self.postMessage({id : message.data.id, status : 'processing'})
 		
 	if(http.readyState === DONE && 
 			( http.status == SUCCESS || http.status == LOCAL )){
