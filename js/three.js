@@ -5670,7 +5670,7 @@ THREE.EventDispatcher = function () {
 	THREE.Raycaster = function ( origin, direction, near, far ) {
 
 		this.ray = new THREE.Ray( origin, direction );
-
+		
 		// normalized ray.direction required for accurate distance calculations
 		if( this.ray.direction.length() > 0 ) {
 
@@ -5748,7 +5748,7 @@ THREE.EventDispatcher = function () {
 			inverseMatrix.getInverse( object.matrixWorld );
 
 			localRay.copy( raycaster.ray ).transform( inverseMatrix );
-
+	
 			for ( var f = 0, fl = geometry.faces.length; f < fl; f ++ ) {
 
 				var face = geometry.faces[ f ];
@@ -5756,14 +5756,14 @@ THREE.EventDispatcher = function () {
 				var material = isFaceMaterial === true ? objectMaterials[ face.materialIndex ] : object.material;
 
 				if ( material === undefined ) continue;
-
+				
 				facePlane.setFromNormalAndCoplanarPoint( face.normal, vertices[face.a] );
 
 				var planeDistance = localRay.distanceToPlane( facePlane );
-
+	
 				// bail if raycaster and plane are parallel
 				if ( Math.abs( planeDistance ) < precision ) continue;
-
+	
 				// if negative distance, then plane is behind raycaster
 				if ( planeDistance < 0 ) continue;
 
@@ -5779,7 +5779,7 @@ THREE.EventDispatcher = function () {
 
 				// this can be done using the planeDistance from localRay because localRay wasn't normalized, but ray was
 				if ( planeDistance < raycaster.near || planeDistance > raycaster.far ) continue;
-
+				
 				intersectPoint = localRay.at( planeDistance, intersectPoint ); // passing in intersectPoint avoids a copy
 
 				if ( face instanceof THREE.Face3 ) {
@@ -17812,19 +17812,19 @@ THREE.WebGLRenderer = function ( parameters ) {
 		return _glExtensionTextureFloat;
 
 	};
-
+	
 	this.supportsStandardDerivatives = function () {
 
 		return _glExtensionStandardDerivatives;
 
 	};
-
+	
 	this.supportsCompressedTextureS3TC = function () {
 
 		return _glExtensionCompressedTextureS3TC;
 
 	};
-
+	
 	this.getMaxAnisotropy  = function () {
 
 		return _maxAnisotropy;
@@ -27656,7 +27656,7 @@ THREE.CurvePath = function () {
 
 	this.curves = [];
 	this.bends = [];
-
+	
 	this.autoClose = false; // Automatically closes the path
 };
 
@@ -27680,11 +27680,11 @@ THREE.CurvePath.prototype.closePath = function() {
 	// Add a line curve if start and end of lines are not connected
 	var startPoint = this.curves[0].getPoint(0);
 	var endPoint = this.curves[this.curves.length-1].getPoint(1);
-
+	
 	if (!startPoint.equals(endPoint)) {
 		this.curves.push( new THREE.LineCurve(endPoint, startPoint) );
 	}
-
+	
 };
 
 // To get accurate point with reference to
@@ -28170,7 +28170,7 @@ THREE.Path.prototype.arc = function ( aX, aY, aRadius,
 
 	this.absarc(aX + x0, aY + y0, aRadius,
 		aStartAngle, aEndAngle, aClockwise );
-
+	
  };
 
  THREE.Path.prototype.absarc = function ( aX, aY, aRadius,
@@ -28404,7 +28404,7 @@ THREE.Path.prototype.getPoints = function( divisions, closedPath ) {
 			//console.log(points);
 
 		  break;
-
+		  
 		case THREE.PathActions.ELLIPSE:
 
 			var aX = args[ 0 ], aY = args[ 1 ],
@@ -35786,4 +35786,3 @@ THREE.ShaderSprite = {
 	}
 
 };
-

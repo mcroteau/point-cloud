@@ -37,7 +37,7 @@
 			<a href="http://threejs.org" target="_blank">three.js</a> - webgl particles example
 		</div>
 
-		<script src="js/three.min.js"></script>
+		<script src="js/three.js"></script>
 
 		<script src="js/Detector.js"></script>
 		<script src="js/stats.min.js"></script>
@@ -75,23 +75,30 @@
 				function addVertices(){
 					
 					if(count >= 3){
-						console.log('interval')
 						clearInterval(interval);
 						interval = 0;
-						console.info(bounds.minx, bounds.miny, bounds.minz, bounds.maxx, bounds.maxy, bounds.maxz);
+						console.log(bounds, total);
+						camera.position.x = bounds.midx;
+						camera.position.y = bounds.midy;
+						camera.lookAt(bounds.midx, bounds.midy, bounds.midz)
 					}
 					
 					
 					count++;
 					geometry = new THREE.Geometry();
 					
-					for ( i = 0; i < 1500; i ++ ) {
+					for ( i = 0; i < 1000000; i ++ ) {
 
 						var vertex = new THREE.Vector3();
-						vertex.x = Math.random() * 2000 - (Math.random() *1000)) + 50;
-						vertex.y = Math.random() * 2000 - (Math.random() *1000)) ;
-						vertex.z = Math.random() * 2000 - (Math.random() *1000);
+						vertex.x = Math.random() * (350000 - 330000) + 330000;
+						vertex.y = Math.random() * (7000000 - 6500000) + 6500000;
+						vertex.z = Math.random() * (2000 - 1000) + 1000;
 
+						// if(i % 3 === 0){
+						// 	vertex.x = vertex.x - (vertex.x * 2)
+						// 	vertex.y = vertex.y - (vertex.y * 2)
+						// 	vertex.z = vertex.z - (vertex.z * 2)
+						// }
 						geometry.vertices.push( vertex );
 						total++;
 					}
@@ -112,8 +119,12 @@
 					minz : 0,
 					maxx : 0,
 					maxy : 0,
-					maxz : 0
+					maxz : 0,
+					midx : 0,
+					midy : 0,
+					midz : 0
 				}
+				
 				
 				function recalculateBoundsAddPlane(){
 					
@@ -128,8 +139,12 @@
 				        var maxz = geometry.boundingBox.max.z;
 				
 						if(minx < bounds.minx)bounds.minx = minx;
+						if(bounds.minx === 0)bounds.minx = minx;
 						if(miny < bounds.miny)bounds.miny = miny;
+						if(bounds.miny === 0)bounds.miny = miny;
 						if(minz < bounds.minz)bounds.minz = minz;
+						if(bounds.minz === 0)bounds.minz = minz;
+						
 						if(maxx > bounds.maxx)bounds.maxx = maxx;
 						if(maxy > bounds.maxy)bounds.maxy = maxy;
 						if(maxz > bounds.maxz)bounds.maxz = maxz;
@@ -138,8 +153,41 @@
 						
 					}
 					
-					console.info(bounds.minx, bounds.miny, bounds.minz, bounds.maxx, bounds.maxy, bounds.maxz);
+					bounds.midx = (bounds.maxx - bounds.minx)/2 + minx;
+					bounds.midy = (bounds.maxy - bounds.miny)/2 + miny;
+					bounds.midz = (bounds.maxz - bounds.minz)/2 + minz;
 					
+					console.warn(bounds.minx, bounds.miny, bounds.minz);
+					console.info(bounds.maxx, bounds.maxy, bounds.maxz);
+					
+					
+					
+					
+					
+				    // rotation.xy = rotation.xy * 0.92 + destinationRotation.xy * 0.02;
+				    // rotation.z = rotation.z * 0.92 + destinationRotation.z * 0.02;
+				    // radius = radius * 0.9 + destinationRadius * 0.1;
+				    // center.x = center.x * 0.9 + destinationCenter.x * 0.1;
+				    // center.y = center.y * 0.9 + destinationCenter.y * 0.1;
+				    // center.z = center.z * 0.9 + destinationCenter.z * 0.1;
+				    // 
+				    // var radius = Math.cos(rotation.z) * destinationRadius;
+				    // var newx = Math.cos(rotation.xy) * radius;
+				    // var newy = Math.sin(rotation.xy) * radius;
+				    // var newz = Math.sin(rotation.z) * destinationRadius;
+				    // 
+				    // camera.position.x = newx + bounds.midx;
+				    // camera.position.y = newy + bounds.midy;
+				    // camera.position.z = newz + bounds.midz;
+				
+					camera.position.x = bounds.midx;
+				    camera.position.y = bounds.midy;
+				    camera.position.z = bounds.midz;
+					
+				    var v = new THREE.Vector3(bounds.midx, bounds.midy, bounds.midz);
+				    camera.up.x = 0; this.camera.up.y = 0; this.camera.up.z = 1;
+				    camera.lookAt(v);
+				
 				}
 				
 				
@@ -203,10 +251,10 @@
 
 				var time = Date.now() * 0.00005;
 
-				camera.position.x += ( mouseX - camera.position.x ) * 0.05;
-				camera.position.y += ( - mouseY - camera.position.y ) * 0.05;
+				//camera.position.x += ( mouseX - camera.position.x ) * 0.05;
+				//camera.position.y += ( - mouseY - camera.position.y ) * 0.05;
 
-				camera.lookAt( scene.position );
+				//camera.lookAt( scene.position );
 				renderer.render( scene, camera );
 
 			}

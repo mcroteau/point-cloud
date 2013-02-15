@@ -48,19 +48,18 @@
 		
 		
 		<script src="js/jquery.js"></script>
-		<script src="js/three.js"></script>
+		<script src="js/three.min.js"></script>
 		<script src="js/jqmwheel.js"></script>
 		
 		<script src="js/stats.min.js"></script>
 
 		<script src="js/Detector.js"></script>
-		<script src="js/TrackballControls2.js"></script>
+		<script src="js/Controls.js"></script>
 		
 			
 		<script>
 		
-			//http://mrdoob.github.com/three.js/examples/misc_controls_trackball.html
-			
+		
 			var $system = [];
 			var camera, scene, renderer;
 			var mouseX = 0, mouseY = 0;
@@ -71,10 +70,10 @@
 			
 			function setupParticleSystem(){
 				$system = $('#system');
+				console.log($system);
 				
-				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 1000 );
-				camera.position.z = 500;
-				
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 500000 );
+				camera.position.z = 10000;
 				
 				scene = new THREE.Scene();
 				scene.fog = new THREE.FogExp2( 0x000000, 0.0007 );
@@ -84,29 +83,11 @@
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				$system.append( renderer.domElement );
 				
-				controls = new THREE.TrackballControls(camera);
-				
-				controls.addEventListener( 'change', render );
-				//controls = new THREE.TrackballControls( camera );
-
-				controls.rotateSpeed = 1.0;
-				controls.zoomSpeed = 1.2;
-				controls.panSpeed = 0.8;
-                
-				controls.noZoom = false;
-				controls.noPan = false;
-                
-				controls.staticMoving = true;
-				controls.dynamicDampingFactor = 0.3;
-				controls.keys = [ 65, 83, 68 ];
-				//controls.addEventListener( 'change', render );
-				
 				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 				animate();
 			}
 			
 			
-			var geometries = [];
 			
 			function addVertices(json){
 				
@@ -119,81 +100,38 @@
 					vertex.x = feature.geometry.coordinates[0];
 					vertex.y = feature.geometry.coordinates[1];
 					vertex.z = feature.geometry.coordinates[2];
-					
+					// console.log(vertex)
 					geometry.vertices.push( vertex );
 					total++;
 				});
 				
-				material = new THREE.ParticleBasicMaterial( { size: 1, color:0xEFEFEF } );
+				material = new THREE.ParticleBasicMaterial( { size: 20000, color:0xEFEFEF } );
 				particles = new THREE.ParticleSystem( geometry, material );
 				scene.add( particles );
-				
-				
-				geometries.push(geometry);
-				recalculateBoundsAddPlane();
 			}
 						
-
-
-
-			var bounds = {
-				minx : 0,
-				miny : 0,
-				minz : 0,
-				maxx : 0,
-				maxy : 0,
-				maxz : 0,
-				midx : 0,
-				midy : 0,
-				midz : 0
-			}
 			
 			
-			function recalculateBoundsAddPlane(){
+			
+			function addVerticesOld(){
 				
-				for(var m = 0; m < geometries.length; m++){
-					var geometry = geometries[m];
-					geometry.computeBoundingBox();
-			        var minx = geometry.boundingBox.min.x;
-			        var miny = geometry.boundingBox.min.y;
-			        var minz = geometry.boundingBox.min.z;
-			        var maxx = geometry.boundingBox.max.x;
-			        var maxy = geometry.boundingBox.max.y;
-			        var maxz = geometry.boundingBox.max.z;
-			
-					if(minx < bounds.minx)bounds.minx = minx;
-					if(bounds.minx === 0)bounds.minx = minx;
-					if(miny < bounds.miny)bounds.miny = miny;
-					if(bounds.miny === 0)bounds.miny = miny;
-					if(minz < bounds.minz)bounds.minz = minz;
-					if(bounds.minz === 0)bounds.minz = minz;
-					
-					if(maxx > bounds.maxx)bounds.maxx = maxx;
-					if(maxy > bounds.maxy)bounds.maxy = maxy;
-					if(maxz > bounds.maxz)bounds.maxz = maxz;
-					
-					//console.log(minx, miny, minz, maxx, maxy, maxz);
-					
+				geometry = new THREE.Geometry();
+				for ( i = 0; i < 1500; i ++ ) {
+
+					var vertex = new THREE.Vector3();
+					vertex.x = Math.random() * 2000 - (Math.random() *1000);
+					vertex.y = Math.random() * 2000 - (Math.random() *1000);
+					vertex.z = Math.random() * 2000 - (Math.random() *1000);
+
+					geometry.vertices.push( vertex );
+					total++;
 				}
 				
-				bounds.midx = (bounds.maxx - bounds.minx)/2 + minx;
-				bounds.midy = (bounds.maxy - bounds.miny)/2 + miny;
-				bounds.midz = (bounds.maxz - bounds.minz)/2 + minz;
-				
-				// console.warn(bounds.minx, bounds.miny, bounds.minz);
-				// console.log(bounds.midx, bounds.midy, bounds.midz);
-				// console.info(bounds.maxx, bounds.maxy, bounds.maxz);
-				
-				camera.position.x = bounds.midx;
-			    camera.position.y = bounds.midy;
-			    camera.position.z = bounds.midz;
-				
-			    var v = new THREE.Vector3(bounds.midx, bounds.midy, bounds.midz);
-			    camera.up.x = 0; this.camera.up.y = 0; this.camera.up.z = 1;
-			    camera.lookAt(v);
-				controls.update();
+				material = new THREE.ParticleBasicMaterial( { size: 2, color:0xEFEFEF } );
+				particles = new THREE.ParticleSystem( geometry, material );
+				scene.add( particles );
 			}
-
+			
 			
 			function onDocumentMouseMove( event ) {
 				mouseX = event.clientX - windowHalfX;
@@ -202,14 +140,13 @@
 			
 			function animate() {
 				requestAnimationFrame( animate );
-				controls.update();
-				//render();
+				render();
 			}
 
 			function render() {
 				// camera.lookAt( scene.position );
-				//camera.position.x += ( mouseX - camera.position.x ) * 0.05;
-				//camera.position.y += ( - mouseY - camera.position.y ) * 0.05;
+				camera.position.x += ( mouseX - camera.position.x ) * 0.05;
+				camera.position.y += ( - mouseY - camera.position.y ) * 0.05;
 				renderer.render( scene, camera );
 			}
 			
@@ -292,6 +229,7 @@
 			}
 			
 			
+			
 			function getFirstFile(){
 				var file = {};
 				for(var id in files.files){
@@ -303,8 +241,7 @@
 			}
 			
 			
-			
-
+		
 								
 			$(document).ready(function(){
 				setupParticleSystem();
